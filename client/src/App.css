@@ -1,0 +1,171 @@
+.game-container {
+  padding: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+}
+
+.divider {
+  border: 0;
+  height: 1px;
+  background: #dcdde1;
+  margin-bottom: 1.5rem;
+}
+
+/* Lobby Form Styles */
+.lobby-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 2rem;
+  max-width: 400px;
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #57606f;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+}
+
+.join-button {
+  padding: 0.85rem;
+  cursor: pointer;
+  background-color: #007bff;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+}
+
+.join-button:hover {
+  background-color: #0056b3;
+}
+
+/* Live Game Layout Styles */
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.room-display {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.room-display span {
+  color: #007bff;
+}
+
+.word-banner {
+  margin: 0;
+  background: #e9ecef;
+  padding: 0.5rem 1.25rem;
+  border-radius: 20px;
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+}
+
+.game-workspace {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+/* Sidebar Scoreboard Styles */
+.sidebar {
+  width: 220px;
+}
+
+.sidebar h4 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  color: #2c3e50;
+}
+
+.player-list {
+  background: #e9ecef;
+  padding: 0.75rem;
+  border-radius: 6px;
+  list-style-type: none;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.player-card {
+  padding: 0.6rem 0.75rem;
+  background: #ffffff;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+  display: flex;
+  flex-direction: column;
+}
+
+.player-name {
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-name.bold {
+  font-weight: bold;
+}
+
+.player-score {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-top: 0.2rem;
+}
+
+/* Canvas Area Container wrapper */
+.canvas-wrapper {
+  flex: 1;
+}
+
+.canvas-locked-notice {
+  color: #d63031;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.canvas-disabled {
+  pointer-events: none;
+  opacity: 0.75;
+}
