@@ -16,7 +16,6 @@ const io = new Server(server, {
 
 const PORT = process.env.PORT || 3001;
 
-const ROUND_DURATION = 40; 
 const WORD_BANK = ["apple", "banana", "guitar", "elephant", "computer", "spaceship", "pizza", "snowman", "castle", "bicycle"];
 
 interface Player {
@@ -27,12 +26,14 @@ interface Player {
 
 interface RoomState {
   players: Player[];
+  hostId: string | null;       // Socket ID of the room creator
   currentArtist: string | null;
   currentWord: string;
   timeLeft: number;
-  gameStarted: boolean;
+  roundDuration: number;       // Customizable turn limit
+  gameStarted: boolean;        // Gatekeeper flag
   artistIndex: number;
-  correctGuessers: string[]; // Tracks socket IDs of players who got it right this round
+  correctGuessers: string[];
 }
 
 interface Rooms {
@@ -46,12 +47,11 @@ const getRandomWord = (): string => {
   return WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)]!;
 };
 
-// Core Game Loop Automation Function
+// Core Game Loop Switcher
 const startTurn = (roomId: string) => {
   const room = activeRooms[roomId] as RoomState;
   if (!room || room.players.length === 0) return;
 
-  // 1. Advance to the next player
   room.artistIndex = (room.artistIndex + 1) % room.players.length;
   const nextArtist = room.players[room.artistIndex];
   
@@ -59,25 +59,20 @@ const startTurn = (roomId: string) => {
 
   room.currentArtist = nextArtist.id;
   room.currentWord = getRandomWord();
-  room.timeLeft = ROUND_DURATION;
-  room.gameStarted = true;
-  room.correctGuessers = []; // Reset the correct guessers list for the new round
+  room.timeLeft = room.roundDuration; // Use the custom set configuration time
 
-  // Clear any existing active intervals running on this room
   if (activeRooms[`interval_${roomId}`]) {
     clearInterval(activeRooms[`interval_${roomId}`]);
   }
 
-  // 2. Alert players and clear old drawings
   io.to(roomId).emit("clear_canvas");
   io.to(roomId).emit("room_state_update", room);
   io.to(roomId).emit("chat_message", {
     sender: "System",
-    text: `🔄 A new round has started! ${nextArtist.username} is drawing.`,
+    text: `🔄 Round started! ${nextArtist.username} is drawing.`,
     isCorrect: false,
   });
 
-  // 3. Start the countdown timer interval
   activeRooms[`interval_${roomId}`] = setInterval(() => {
     const activeRoom = activeRooms[roomId] as RoomState;
     if (!activeRoom) {
@@ -119,15 +114,18 @@ io.on("connection", (socket) => {
   socket.on("join_room", ({ roomId, username }: { roomId: string; username: string }) => {
     socket.join(roomId);
 
+    // If room doesn't exist, this player becomes the creator/host
     if (!activeRooms[roomId]) {
       activeRooms[roomId] = {
         players: [],
+        hostId: socket.id, // Set host identity
         currentArtist: null,
         currentWord: "",
-        timeLeft: ROUND_DURATION,
+        timeLeft: 40,
+        roundDuration: 40, // Default duration fallback
         gameStarted: false,
         artistIndex: -1,
-        correctGuessers: [], // Initializing array
+        correctGuessers: [],
       };
     }
 
@@ -145,8 +143,23 @@ io.on("connection", (socket) => {
       text: `${username} has entered the room!`,
       isCorrect: false,
     });
+  });
 
-    if (!room.gameStarted && room.players.length >= 2) {
+  // Event: Host changes game configuration duration parameters mid-lobby
+  socket.on("update_settings", ({ roomId, roundDuration }: { roomId: string; roundDuration: number }) => {
+    const room = activeRooms[roomId] as RoomState;
+    if (room && room.hostId === socket.id && !room.gameStarted) {
+      room.roundDuration = roundDuration;
+      room.timeLeft = roundDuration;
+      io.to(roomId).emit("room_state_update", room);
+    }
+  });
+
+  // Event: Host fires explicit manual start signal trigger button
+  socket.on("start_game_request", ({ roomId }: { roomId: string }) => {
+    const room = activeRooms[roomId] as RoomState;
+    if (room && room.hostId === socket.id && !room.gameStarted) {
+      room.gameStarted = true;
       startTurn(roomId);
     }
   });
@@ -168,22 +181,12 @@ io.on("connection", (socket) => {
       return;
     }
 
-    // Check if the user already guessed it right earlier this turn
     const hasAlreadyGuessed = room.correctGuessers.includes(socket.id);
 
     if (room.gameStarted && cleanedGuess === secretWord) {
-      if (hasAlreadyGuessed) {
-        socket.emit("chat_message", {
-          sender: "System",
-          text: "You've already guessed the word!",
-          isCorrect: false,
-        });
-        return;
-      }
+      if (hasAlreadyGuessed) return;
 
-      // Add player to the round's success list
       room.correctGuessers.push(socket.id);
-
       const playerIndex = room.players.findIndex((p) => p.id === socket.id);
       if (playerIndex !== -1) {
         room.players[playerIndex].score += Math.max(20, room.timeLeft * 2); 
@@ -197,26 +200,13 @@ io.on("connection", (socket) => {
 
       io.to(roomId).emit("room_state_update", room);
       
-      // --- ROUND SKIP CHECK ENGINE ---
-      // Total guessers needed = Everyone inside the room minus 1 (the artist drawing)
       const totalGuessersNeeded = room.players.length - 1;
-
       if (room.correctGuessers.length >= totalGuessersNeeded && totalGuessersNeeded > 0) {
-        // Clear the countdown running right now
         if (activeRooms[`interval_${roomId}`]) {
           clearInterval(activeRooms[`interval_${roomId}`]);
         }
-
-        io.to(roomId).emit("chat_message", {
-          sender: "System",
-          text: "Everyone guessed the word! Moving to next round...",
-          isCorrect: false,
-        });
-
-        // Fast-forward immediately to the next turn!
         startTurn(roomId);
       }
-      
     } else {
       io.to(roomId).emit("chat_message", {
         sender: username,
@@ -237,6 +227,11 @@ io.on("connection", (socket) => {
 
       room.players = room.players.filter((p) => p.id !== socket.id);
       room.correctGuessers = room.correctGuessers.filter((id) => id !== socket.id);
+
+      // If the host leaves, pass the host crown responsibilities to the next player
+      if (room.hostId === socket.id && room.players.length > 0) {
+        room.hostId = room.players[0]!.id;
+      }
       
       io.to(roomId).emit("room_state_update", room);
 
@@ -246,22 +241,13 @@ io.on("connection", (socket) => {
           delete activeRooms[`interval_${roomId}`];
         }
         delete activeRooms[roomId];
-      } else if (room.currentArtist === socket.id) {
+      } else if (room.gameStarted && room.currentArtist === socket.id) {
         io.to(roomId).emit("chat_message", {
           sender: "System",
           text: "The artist left the match. Shuffling round...",
           isCorrect: false,
         });
         startTurn(roomId);
-      } else {
-        // If someone who hadn't guessed yet leaves, it might trigger an immediate skip condition
-        const totalGuessersNeeded = room.players.length - 1;
-        if (room.correctGuessers.length >= totalGuessersNeeded && totalGuessersNeeded > 0) {
-          if (activeRooms[`interval_${roomId}`]) {
-            clearInterval(activeRooms[`interval_${roomId}`]);
-          }
-          startTurn(roomId);
-        }
       }
     }
   });
