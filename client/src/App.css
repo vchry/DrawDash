@@ -49,3 +49,26 @@
   cursor: not-allowed;
   transform: none;
 }
+
+.game-container {
+  height: 100vh;
+  width: 100vw;
+  border: 2px solid red;
+  /* align-items: center; */
+  text-align: center;
+}
+
+.game-container {
+  background-image: url('./assets/bg.png');
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
+}
+
+/* .logo-container {
+  width: 60vw;
+} */
+
+.logo {
+  width: 40vw;
+}
