@@ -10,7 +10,9 @@ import Scoreboard from "./components/Scoreboard";
 import Canvas from "./components/Canvas";
 import Chat from "./components/Chat";
 
-import logo from "./assets/logo.gif"
+import logo from "./assets/logo.gif";
+import avatarSprite from "./assets/avatar-sprites.gif"
+
 
 import "./App.css";
 
@@ -61,13 +63,91 @@ function App() {
   const isHost = roomState?.hostId === socket.id;
   const isArtist = roomState?.currentArtist === socket.id;
 
+  const SPRITE_SIZE = 100;
+
+  const getSpritePosition = (col: number, row: number) => ({
+    backgroundPosition: `${-col * SPRITE_SIZE}px ${-row * SPRITE_SIZE}px`,
+  });
+
+  function shuffle(array: number[]) {
+    const arr = [...array];
+
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+
+    return arr;
+  }
+
+
+  const eyeIndexes = shuffle([0, 1, 2, 3, 4, 5, 6, 7]);
+
+  const mouthIndexes = shuffle([0, 1, 2, 3, 4, 5, 6, 7]);
+
+  const ownerIndex = Math.floor(Math.random() * 8);
+
+  const avatars = Array.from(
+    { length: 8 },
+    (_, i) => ({
+      body: i,
+      eyes: eyeIndexes[i],
+      mouth: mouthIndexes[i],
+      owner: i === ownerIndex ? 0 : null,
+    })
+  );
+
+  console.log(avatars);
+
+
   return (
     <div className="game-container">
       <div className="logo-container">
         <img src={logo} alt="DrawDash Logo" className="logo" />
       </div>
       {/* <h1 className="title">✏️ Skribbl Clone</h1> */}
+      <div className="hero-avatar">
+        {avatars.map((avatar, index) => (
+          <div className="hero" key={index}>
+            <div
+              className="layer body"
+              style={{
+                backgroundImage: `url(${avatarSprite})`,
+                ...getSpritePosition(avatar.body, 0),
+              }}
+            />
+
+            <div
+              className="layer eyes"
+              style={{
+                backgroundImage: `url(${avatarSprite})`,
+                ...getSpritePosition(avatar.eyes, 1),
+              }}
+            />
+
+            <div
+              className="layer mouth"
+              style={{
+                backgroundImage: `url(${avatarSprite})`,
+                ...getSpritePosition(avatar.mouth, 2),
+              }}
+            />
+
+            {avatar.owner !== null && (
+              <div
+                className="layer owner"
+                style={{
+                  backgroundImage: `url(${avatarSprite})`,
+                  ...getSpritePosition(avatar.owner, 3),
+                }}
+              />
+            )}
+          </div>
+        ))}
+      </div>
       <hr className="divider" />
+
 
       {!isJoined ? (
         <LobbyForm

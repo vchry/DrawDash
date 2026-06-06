@@ -3,7 +3,7 @@
   background: white;
   padding: 2.5rem;
   border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
   max-width: 600px;
   margin: 2rem auto;
   text-align: center;
@@ -71,4 +71,49 @@
 
 .logo {
   width: 40vw;
+}
+
+/* hero avatar container */
+.hero {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin-left: -10px;
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+
+  width: 100px;
+  height: 100px;
+
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
+.body {
+  z-index: 1;
+}
+
+.eyes {
+  z-index: 2;
+}
+
+.mouth {
+  z-index: 3;
+}
+
+.owner {
+  z-index: 4;
+}
+
+.hero-avatar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: scale(0.75);
+  transform-origin: center top;
+  flex-wrap: wrap;
+  margin-top: 20px;
 }
