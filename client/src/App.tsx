@@ -88,18 +88,44 @@ function App() {
       setTimer(secondsLeft);
     });
 
+    socket.on("room_created", (data: { roomId: string }) => {
+      setRoomId(data.roomId);
+    });
+
     return () => {
       socket.off("room_state_update");
       socket.off("timer_tick");
+      socket.off("room_created");
     };
   }, []);
+
+  const handleCreateRoom = () => {
+    if (!username.trim()) return;
+
+    socket.emit("create_room", { username, avatar: selectedAvatar });
+
+    // Wait for server confirmation before marking user as joined so
+    // PregameLobby renders reliably after roomState arrives.
+    socket.once("room_created", (data: { roomId: string }) => {
+      setRoomId(data.roomId);
+      setIsJoined(true);
+    });
+  };
 
   const handleJoinRoom = (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !roomId.trim()) return;
 
     socket.emit("join_room", { roomId, username });
-    setIsJoined(true);
+
+    socket.once("join_failed", (data: { reason?: string }) => {
+      alert(data?.reason || "Invalid Room ID");
+    });
+
+    socket.once("join_success", (data: { roomId: string }) => {
+      setRoomId(data.roomId);
+      setIsJoined(true);
+    });
   };
 
   const handleDurationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -226,7 +252,7 @@ function App() {
           onNextMouth={onNextMouth}
           onRandomize={onRandomize}
           onPlay={handleJoinRoom}
-          onCreateRoom={() => { }}
+          onCreateRoom={handleCreateRoom}
         />
       ) : roomState && !roomState.gameStarted ? (
         <PregameLobby

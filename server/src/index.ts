@@ -58,6 +58,15 @@ const getRandomWord = (): string => {
   return WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)]!;
 };
 
+const generateRoomId = (): string => {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let roomId = "";
+  for (let i = 0; i < 6; i++) {
+    roomId += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return roomId;
+};
+
 // Core Game Loop Switcher
 const startTurn = (roomId: string) => {
   const room = activeRooms[roomId] as RoomState;
@@ -122,33 +131,58 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("create_room", ({ username }: { username: string }) => {
+    const roomId = generateRoomId();
+    socket.join(roomId);
+
+    activeRooms[roomId] = {
+      players: [],
+      hostId: socket.id,
+      currentArtist: null,
+      currentWord: "",
+      timeLeft: 40,
+      roundDuration: 40,
+      gameStarted: false,
+      artistIndex: -1,
+      correctGuessers: [],
+    };
+
+    const room = activeRooms[roomId] as RoomState;
+    room.players.push({ id: socket.id, username, score: 0 });
+
+    console.log(`🏗️  Room created: ${roomId} by ${username}`);
+    socket.emit("room_created", { roomId });
+    io.to(roomId).emit("room_state_update", room);
+
+    io.to(roomId).emit("chat_message", {
+      sender: "System",
+      text: `${username} created the room!`,
+      isCorrect: false,
+    });
+  });
+
   socket.on(
     "join_room",
     ({ roomId, username }: { roomId: string; username: string }) => {
-      socket.join(roomId);
+      const room = activeRooms[roomId] as RoomState | undefined;
 
-      // If room doesn't exist, this player becomes the creator/host
-      if (!activeRooms[roomId]) {
-        activeRooms[roomId] = {
-          players: [],
-          hostId: socket.id, // Set host identity
-          currentArtist: null,
-          currentWord: "",
-          timeLeft: 40,
-          roundDuration: 40, // Default duration fallback
-          gameStarted: false,
-          artistIndex: -1,
-          correctGuessers: [],
-        };
+      // If room doesn't exist, notify the client instead of creating one
+      if (!room) {
+        socket.emit("join_failed", { reason: "Invalid Room ID" });
+        return;
       }
 
-      const room = activeRooms[roomId] as RoomState;
+      socket.join(roomId);
 
       if (!room.players.some((p) => p.id === socket.id)) {
         room.players.push({ id: socket.id, username, score: 0 });
       }
 
       console.log(`👤 ${username} joined room: ${roomId}`);
+
+      // Acknowledge successful join to the joining socket
+      socket.emit("join_success", { roomId });
+
       io.to(roomId).emit("room_state_update", room);
 
       io.to(roomId).emit("chat_message", {
