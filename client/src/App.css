@@ -53,13 +53,12 @@
 .game-container {
   height: 100vh;
   /* width: 100vw; */
-  border: 2px solid red;
   /* align-items: center; */
   text-align: center;
 }
 
 .game-container {
-  background-image: url('./assets/bg.png');
+  background-image: url("./assets/bg.png");
   background-size: cover;
   background-position: center;
   min-height: 100vh;
@@ -70,7 +69,8 @@
 } */
 
 .logo {
-  width: 40vw;
+  width: 35vw;
+  filter: drop-shadow(3px 3px 0px rgba(1, 1, 0, 0.3));
 }
 
 /* hero avatar container */
@@ -112,10 +112,11 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  transform: scale(0.75);
+  transform: scale(0.55);
   transform-origin: center top;
   flex-wrap: wrap;
-  margin-top: 20px;
+  margin-top: 0px;
+  filter: drop-shadow(4px 4px 0px rgba(1, 1, 0, 0.3));
 }
 
 /* --- MAIN WRAPPER (Fixes the page layout collapse) --- */
@@ -129,12 +130,12 @@
 
 /* --- THE LOBBY CARD --- */
 .lobby-card {
-  width: 450px;
-  padding: 20px;
-  background: rgba(18, 44, 136, 0.95);
+  width: 400px;
+  padding: 15px;
+  background: rgba(12, 44, 150, 0.75);
   /* Deep blue to match screenshot */
-  border-radius: 8px;
-  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.4);
+  border-radius: 3px;
+  /* box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.4); */
 }
 
 .top-row {
@@ -145,12 +146,25 @@
 
 .username-input {
   flex: 1;
-  height: 45px;
+  height: 33px;
   padding: 0 12px;
   font-size: 16px;
-  border-radius: 4px;
-  border: none;
+  border-radius: 2px;
+  border: 1px solid gray;
   outline: none;
+  font-family: "Varela Round", sans-serif;
+  font-weight: bold;
+  width: 100%;
+}
+
+.username-input::placeholder {
+  color: #9b9b9b;
+  font-weight: bold;
+  opacity: 1; /* Ensures text color visibility in Firefox */
+}
+
+.roomid-input {
+  margin: 10px 0px;
 }
 
 .language-select {
@@ -169,16 +183,18 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 30px;
+  gap: 0px;
   /* Space between arrows and avatar */
-  margin-bottom: 25px;
-  padding: 10px 0;
+  margin-bottom: 10px;
+  padding: 5px 0px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
 }
 
 .avatar-controls {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 0px;
   /* Vertical gap between the 3 arrows */
 }
 
@@ -196,17 +212,64 @@
 }
 
 /* --- ABSOLUTE POSITIONED DICE --- */
-.dice-btn {
-  position: absolute;
+.dice-container {
+  position: absolute; /* Keeps your container in the corner */
   top: 10px;
   right: 10px;
-  width: 30px;
-  cursor: pointer;
-  transition: transform 0.1s;
+  width: 60px; /* Give it enough space for the tooltip */
+  height: 60px;
 }
 
-.dice-btn:active {
-  transform: scale(0.9);
+.dice-btn {
+  /* Remove absolute positioning here so it stays inside the container */
+  width: 40px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: all 0.1s ease-out;
+}
+
+.dice-btn:hover {
+  transform: scale(1.2);
+  opacity: 1;
+}
+
+.dice-text {
+  visibility: hidden;
+  opacity: 0;
+  
+  /* Position to the left of the button */
+  position: absolute;
+  top: 5px;
+  right: 110%; /* Pushes it to the left of the button */
+  
+  background-color: #3b71ca;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 10;
+  
+  text-shadow: 2px 2px 0px rgba(144, 144, 144, 0.5);
+}
+
+/* The Triangle pointing to the right */
+.dice-text::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 100%; /* Sits on the right edge of the text box */
+  margin-top: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent transparent #3b71ca;
+}
+
+.dice-container:hover .dice-text {
+  visibility: visible;
+  opacity: 1;
 }
 
 /* --- BUTTONS --- */
@@ -232,17 +295,19 @@
 .private-room-btn {
   width: 100%;
   height: 45px;
-  background: #3d8de6;
+  background: #59e534;
   color: white;
-  font-size: 18px;
+  font-size: 23px;
   font-weight: bold;
   border: none;
-  border-radius: 5px;
+  border-radius: 3px;
   cursor: pointer;
+  font-family: "Varela Round", sans-serif;
+  text-shadow: 2px 2px 0px rgba(144, 144, 144, 0.5);
 }
 
 .private-room-btn:hover {
-  background: #3279c7;
+  background-color: #38c41c;
 }
 
 .room-divider {
@@ -272,7 +337,7 @@
   width: 100%;
   height: 45px;
 
-  background: #59e534;
+  background: #2c8de7;
   color: white;
 
   border: none;
@@ -281,4 +346,11 @@
   font-size: 20px;
   font-weight: bold;
   cursor: pointer;
+
+  font-family: "Varela Round", sans-serif;
+  text-shadow: 2px 2px 0px rgba(144, 144, 144, 0.5);
+}
+
+.join-room-btn:hover{
+  background-color: #1671c5;
 }

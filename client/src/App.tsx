@@ -234,7 +234,7 @@ function App() {
           </div>
         ))}
       </div>
-      <hr className="divider" />
+      {/* <hr className="divider" /> */}
 
       {!isJoined ? (
         <LobbyForm

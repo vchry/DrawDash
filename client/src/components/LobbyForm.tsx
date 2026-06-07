@@ -76,9 +76,6 @@ export default function LobbyForm({
           onChange={(e) => setUsername(e.target.value)}
           className="username-input"
         />
-        <select className="language-select">
-          <option>English</option>
-        </select>
       </div>
 
       <div className="avatar-section">
@@ -96,7 +93,7 @@ export default function LobbyForm({
             eyes={selectedAvatar.eyes}
             mouth={selectedAvatar.mouth}
             size={120} // <-- Easily scale it up to 120px!
-            style={{ filter: "drop-shadow(0px 4px 5px rgba(0,0,0,0.5))" }} // Add any CSS you want!
+            style={{}} // Add any CSS you want!
           />
         </div>
 
@@ -108,33 +105,30 @@ export default function LobbyForm({
         </div>
 
         {/* DICE BUTTON */}
-        <img
-          src={diceGif}
-          alt="random"
-          className="dice-btn"
-          onClick={onRandomize}
-        />
+        <div className="dice-container">
+          <img
+            src={diceGif}
+            alt="random"
+            className="dice-btn"
+            onClick={onRandomize}
+          />
+
+          <span className="dice-text">Randomize your Avatar!</span>
+        </div>
       </div>
 
       <button type="button" className="private-room-btn" onClick={onCreateRoom}>
-        Create Private Room
+        Create Room
       </button>
-      <div className="room-divider">
-        <span>OR</span>
-      </div>
       <input
         type="text"
         placeholder="Enter Room ID"
         value={roomId}
         onChange={(e) => setRoomId(e.target.value)}
-        className="room-id-input"
+        className="username-input roomid-input"
       />
-      <button
-        type="button"
-        className="join-room-btn"
-        onClick={onJoinRoom}
-      >
-        Join Private Room
+      <button type="button" className="join-room-btn" onClick={onJoinRoom}>
+        Join Room
       </button>
     </form>
   );
