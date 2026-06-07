@@ -1,7 +1,6 @@
 import React from "react";
 import diceGif from "../assets/dice.gif";
 import arrowGif from "../assets/arrows.gif";
-
 import Avatar from "./Avatar";
 
 interface Avatar {
@@ -13,24 +12,34 @@ interface Avatar {
 interface LobbyFormProps {
   username: string;
   setUsername: (value: string) => void;
+
+  roomId: string;
+  setRoomId: (value: string) => void;
+
   selectedAvatar: Avatar;
-  renderAvatar: (avatar: Avatar) => React.ReactNode;
+
   onPrevBody: () => void;
   onNextBody: () => void;
   onPrevEyes: () => void;
   onNextEyes: () => void;
   onPrevMouth: () => void;
   onNextMouth: () => void;
+
   onRandomize: () => void;
+
   onPlay: (e: React.FormEvent) => void;
+
   onCreateRoom: () => void;
+  onJoinRoom: (e: React.FormEvent) => void;
 }
 
 export default function LobbyForm({
   username,
   setUsername,
+  roomId,
+  setRoomId,
+  onJoinRoom,
   selectedAvatar,
-  renderAvatar,
   onPrevBody,
   onNextBody,
   onPrevEyes,
@@ -90,11 +99,6 @@ export default function LobbyForm({
             style={{ filter: "drop-shadow(0px 4px 5px rgba(0,0,0,0.5))" }} // Add any CSS you want!
           />
         </div>
-        {/* <div className="avatar-preview">
-          <div className="preview-hero">
-            {renderAvatar(selectedAvatar)}
-          </div>
-        </div> */}
 
         {/* RIGHT ARROWS */}
         <div className="avatar-controls">
@@ -112,12 +116,25 @@ export default function LobbyForm({
         />
       </div>
 
-      <button type="submit" className="play-btn">
-        Play!
-      </button>
-
       <button type="button" className="private-room-btn" onClick={onCreateRoom}>
         Create Private Room
+      </button>
+      <div className="room-divider">
+        <span>OR</span>
+      </div>
+      <input
+        type="text"
+        placeholder="Enter Room ID"
+        value={roomId}
+        onChange={(e) => setRoomId(e.target.value)}
+        className="room-id-input"
+      />
+      <button
+        type="button"
+        className="join-room-btn"
+        onClick={onJoinRoom}
+      >
+        Join Private Room
       </button>
     </form>
   );

@@ -31,6 +31,7 @@ function App() {
     mouth: 0,
   });
 
+
   const onPrevBody = () =>
     setSelectedAvatar((a) => ({
       ...a,
@@ -75,37 +76,6 @@ function App() {
     });
   };
 
-  const renderAvatar = (avatar: {
-    body: number;
-    eyes: number;
-    mouth: number;
-  }) => (
-    <div className="hero">
-      <div
-        className="layer body"
-        style={{
-          backgroundImage: `url(${avatarSprite})`,
-          ...getSpritePosition(avatar.body, 0),
-        }}
-      />
-
-      <div
-        className="layer eyes"
-        style={{
-          backgroundImage: `url(${avatarSprite})`,
-          ...getSpritePosition(avatar.eyes, 1),
-        }}
-      />
-
-      <div
-        className="layer mouth"
-        style={{
-          backgroundImage: `url(${avatarSprite})`,
-          ...getSpritePosition(avatar.mouth, 2),
-        }}
-      />
-    </div>
-  );
 
   useEffect(() => {
     socket.on("room_state_update", (updatedRoom: RoomState) => {
@@ -162,20 +132,36 @@ function App() {
     return arr;
   }
 
-  const eyeIndexes = shuffle([0, 1, 2, 3, 4, 5, 6, 7]);
 
-  const mouthIndexes = shuffle([0, 1, 2, 3, 4, 5, 6, 7]);
+  const [avatars] = useState(() => {
+    const eyeIndexes = shuffle([0, 1, 2, 3, 4, 5, 6, 7]);
 
-  const ownerIndex = Math.floor(Math.random() * 8);
+    const mouthIndexes = shuffle([0, 1, 2, 3, 4, 5, 6, 7]);
 
-  const avatars = Array.from({ length: 8 }, (_, i) => ({
-    body: i,
-    eyes: eyeIndexes[i],
-    mouth: mouthIndexes[i],
-    owner: i === ownerIndex ? 0 : null,
-  }));
+    const ownerIndex = Math.floor(Math.random() * 8);
 
-  console.log(avatars);
+    return Array.from({ length: 8 }, (_, i) => ({
+      body: i,
+      eyes: eyeIndexes[i],
+      mouth: mouthIndexes[i],
+      owner: i === ownerIndex ? 0 : null,
+    }));
+  });
+
+  // const eyeIndexes = shuffle([0, 1, 2, 3, 4, 5, 6, 7]);
+
+  // const mouthIndexes = shuffle([0, 1, 2, 3, 4, 5, 6, 7]);
+
+  // const ownerIndex = Math.floor(Math.random() * 8);
+
+  // const avatars = Array.from({ length: 8 }, (_, i) => ({
+  //   body: i,
+  //   eyes: eyeIndexes[i],
+  //   mouth: mouthIndexes[i],
+  //   owner: i === ownerIndex ? 0 : null,
+  // }));
+
+  // console.log(avatars);
 
   return (
     <div className="game-container">
@@ -228,8 +214,10 @@ function App() {
         <LobbyForm
           username={username}
           setUsername={setUsername}
+          roomId={roomId}
+          setRoomId={setRoomId}
+          onJoinRoom={handleJoinRoom}
           selectedAvatar={selectedAvatar}
-          renderAvatar={renderAvatar}
           onPrevBody={onPrevBody}
           onNextBody={onNextBody}
           onPrevEyes={onPrevEyes}
@@ -237,8 +225,8 @@ function App() {
           onPrevMouth={onPrevMouth}
           onNextMouth={onNextMouth}
           onRandomize={onRandomize}
-          onPlay={() => {}}
-          onCreateRoom={() => {}}
+          onPlay={handleJoinRoom}
+          onCreateRoom={() => { }}
         />
       ) : roomState && !roomState.gameStarted ? (
         <PregameLobby
