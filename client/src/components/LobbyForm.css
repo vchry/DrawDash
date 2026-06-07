@@ -1,0 +1,117 @@
+/* --- THE LOBBY CARD CONTAINER --- */
+.lobby-card {
+  width: 450px;
+  margin: 0 auto;
+  padding: 24px;
+  background: rgba(18, 44, 136, 0.95); /* Dark blue background */
+  border-radius: 8px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+/* --- TOP INPUTS --- */
+.top-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.username-input {
+  flex: 1;
+  height: 40px;
+  padding: 0 10px;
+  font-size: 16px;
+  border-radius: 4px;
+  border: none;
+  outline: none;
+}
+
+.language-select {
+  width: 120px;
+  height: 40px;
+  font-size: 16px;
+  border-radius: 4px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+/* --- AVATAR SECTION --- */
+.avatar-section {
+  display: flex;
+  justify-content: space-between; /* Pushes arrows to sides, avatar to center */
+  align-items: center;
+  padding: 10px 40px; /* Space from the edges of the card */
+  margin-bottom: 20px;
+}
+
+.avatar-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Vertical space between the 3 arrows */
+}
+
+/* Make sure your arrows are sized correctly as discussed before */
+.arrow {
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  background-repeat: no-repeat;
+  background-size: 80px 40px; 
+}
+.arrow-left { background-position: 0 0; }
+.arrow-right { background-position: -40px 0; }
+
+.avatar-preview {
+  width: 100px;
+  height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.preview-hero {
+  transform: scale(1.8); /* Scales up the avatar in the middle */
+}
+
+/* --- ABSOLUTE POSITIONED DICE --- */
+.dice-btn {
+  position: absolute;
+  top: 80px; 
+  right: 25px;
+  width: 30px;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.dice-btn:active {
+  transform: scale(0.9);
+}
+
+/* --- BUTTONS --- */
+.play-btn {
+  width: 100%;
+  height: 60px;
+  background: #59e534;
+  color: white;
+  font-size: 32px;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 15px;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3); /* Adds that Skribbl-style text pop */
+}
+.play-btn:hover { background: #4cd12b; }
+
+.private-room-btn {
+  width: 100%;
+  height: 45px;
+  background: #3d8de6;
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.private-room-btn:hover { background: #3279c7; }

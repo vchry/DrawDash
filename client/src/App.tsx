@@ -11,8 +11,7 @@ import Canvas from "./components/Canvas";
 import Chat from "./components/Chat";
 
 import logo from "./assets/logo.gif";
-import avatarSprite from "./assets/avatar-sprites.gif"
-
+import avatarSprite from "./assets/avatar-sprites.gif";
 
 import "./App.css";
 
@@ -25,6 +24,88 @@ function App() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [roomState, setRoomState] = useState<RoomState | null>(null);
   const [timer, setTimer] = useState(40);
+
+  const [selectedAvatar, setSelectedAvatar] = useState({
+    body: 0,
+    eyes: 0,
+    mouth: 0,
+  });
+
+  const onPrevBody = () =>
+    setSelectedAvatar((a) => ({
+      ...a,
+      body: (a.body + 7) % 8,
+    }));
+
+  const onNextBody = () =>
+    setSelectedAvatar((a) => ({
+      ...a,
+      body: (a.body + 1) % 8,
+    }));
+
+  const onPrevEyes = () =>
+    setSelectedAvatar((a) => ({
+      ...a,
+      eyes: (a.eyes + 7) % 8,
+    }));
+
+  const onNextEyes = () =>
+    setSelectedAvatar((a) => ({
+      ...a,
+      eyes: (a.eyes + 1) % 8,
+    }));
+
+  const onPrevMouth = () =>
+    setSelectedAvatar((a) => ({
+      ...a,
+      mouth: (a.mouth + 7) % 8,
+    }));
+
+  const onNextMouth = () =>
+    setSelectedAvatar((a) => ({
+      ...a,
+      mouth: (a.mouth + 1) % 8,
+    }));
+
+  const onRandomize = () => {
+    setSelectedAvatar({
+      body: Math.floor(Math.random() * 8),
+      eyes: Math.floor(Math.random() * 8),
+      mouth: Math.floor(Math.random() * 8),
+    });
+  };
+
+  const renderAvatar = (avatar: {
+    body: number;
+    eyes: number;
+    mouth: number;
+  }) => (
+    <div className="hero">
+      <div
+        className="layer body"
+        style={{
+          backgroundImage: `url(${avatarSprite})`,
+          ...getSpritePosition(avatar.body, 0),
+        }}
+      />
+
+      <div
+        className="layer eyes"
+        style={{
+          backgroundImage: `url(${avatarSprite})`,
+          ...getSpritePosition(avatar.eyes, 1),
+        }}
+      />
+
+      <div
+        className="layer mouth"
+        style={{
+          backgroundImage: `url(${avatarSprite})`,
+          ...getSpritePosition(avatar.mouth, 2),
+        }}
+      />
+    </div>
+  );
 
   useEffect(() => {
     socket.on("room_state_update", (updatedRoom: RoomState) => {
@@ -81,25 +162,20 @@ function App() {
     return arr;
   }
 
-
   const eyeIndexes = shuffle([0, 1, 2, 3, 4, 5, 6, 7]);
 
   const mouthIndexes = shuffle([0, 1, 2, 3, 4, 5, 6, 7]);
 
   const ownerIndex = Math.floor(Math.random() * 8);
 
-  const avatars = Array.from(
-    { length: 8 },
-    (_, i) => ({
-      body: i,
-      eyes: eyeIndexes[i],
-      mouth: mouthIndexes[i],
-      owner: i === ownerIndex ? 0 : null,
-    })
-  );
+  const avatars = Array.from({ length: 8 }, (_, i) => ({
+    body: i,
+    eyes: eyeIndexes[i],
+    mouth: mouthIndexes[i],
+    owner: i === ownerIndex ? 0 : null,
+  }));
 
   console.log(avatars);
-
 
   return (
     <div className="game-container">
@@ -148,14 +224,21 @@ function App() {
       </div>
       <hr className="divider" />
 
-
       {!isJoined ? (
         <LobbyForm
           username={username}
           setUsername={setUsername}
-          roomId={roomId}
-          setRoomId={setRoomId}
-          onJoin={handleJoinRoom}
+          selectedAvatar={selectedAvatar}
+          renderAvatar={renderAvatar}
+          onPrevBody={onPrevBody}
+          onNextBody={onNextBody}
+          onPrevEyes={onPrevEyes}
+          onNextEyes={onNextEyes}
+          onPrevMouth={onPrevMouth}
+          onNextMouth={onNextMouth}
+          onRandomize={onRandomize}
+          onPlay={() => {}}
+          onCreateRoom={() => {}}
         />
       ) : roomState && !roomState.gameStarted ? (
         <PregameLobby
