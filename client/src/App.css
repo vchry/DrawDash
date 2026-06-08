@@ -1,111 +1,20 @@
-/* Pre-game Setting Setup Panel Grid rules */
-.pregame-lobby {
-  background: white;
-  padding: 2.5rem;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-  max-width: 600px;
-  margin: 2rem auto;
-  text-align: center;
-}
-
-.settings-card {
-  background: #f1f2f6;
-  padding: 1.5rem;
-  border-radius: 8px;
-  margin: 1.5rem 0;
-  text-align: left;
-}
-
-.host-badge {
-  background: #ffc107;
-  color: #000;
-  padding: 2px 8px;
-  font-size: 0.75rem;
-  font-weight: bold;
-  border-radius: 4px;
-  margin-left: 6px;
-}
-
-.start-btn {
-  background: #2ed573;
-  color: white;
-  padding: 0.85rem 2rem;
-  font-size: 1.1rem;
-  font-weight: bold;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: transform 0.1s ease;
-}
-
-.start-btn:hover {
-  background: #26af5f;
-  transform: scale(1.02);
-}
-
-.start-btn:disabled {
-  background: #a4b0be;
-  cursor: not-allowed;
-  transform: none;
-}
-
+/* --- MAIN WRAPPER --- */
 .game-container {
-  height: 100vh;
-  /* width: 100vw; */
-  /* align-items: center; */
-  text-align: center;
-}
-
-.game-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   background-image: url("./assets/bg.png");
   background-size: cover;
   background-position: center;
-  min-height: 100vh;
+  text-align: center;
 }
 
-/* .logo-container {
-  width: 60vw;
-} */
-
+/* --- LOGO & AVATARS --- */
 .logo {
   width: 35vw;
   filter: drop-shadow(3px 3px 0px rgba(1, 1, 0, 0.3));
-}
-
-/* hero avatar container */
-.hero {
-  position: relative;
-  width: 100px;
-  height: 100px;
-  margin-left: -10px;
-}
-
-.layer {
-  position: absolute;
-  inset: 0;
-
-  width: 100px;
-  height: 100px;
-
-  background-repeat: no-repeat;
-  image-rendering: pixelated;
-}
-
-.body {
-  z-index: 1;
-}
-
-.eyes {
-  z-index: 2;
-}
-
-.mouth {
-  z-index: 3;
-}
-
-.owner {
-  z-index: 4;
 }
 
 .hero-avatar {
@@ -119,23 +28,33 @@
   filter: drop-shadow(4px 4px 0px rgba(1, 1, 0, 0.3));
 }
 
-/* --- MAIN WRAPPER (Fixes the page layout collapse) --- */
-.game-container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+.hero {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin-left: -10px;
 }
+
+.layer {
+  position: absolute;
+  inset: 0;
+  width: 100px;
+  height: 100px;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
+.body { z-index: 1; }
+.eyes { z-index: 2; }
+.mouth { z-index: 3; }
+.owner { z-index: 4; }
 
 /* --- THE LOBBY CARD --- */
 .lobby-card {
   width: 400px;
   padding: 15px;
   background: rgba(12, 44, 150, 0.75);
-  /* Deep blue to match screenshot */
   border-radius: 3px;
-  /* box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.4); */
 }
 
 .top-row {
@@ -160,7 +79,7 @@
 .username-input::placeholder {
   color: #9b9b9b;
   font-weight: bold;
-  opacity: 1; /* Ensures text color visibility in Firefox */
+  opacity: 1;
 }
 
 .roomid-input {
@@ -184,7 +103,6 @@
   justify-content: center;
   align-items: center;
   gap: 0px;
-  /* Space between arrows and avatar */
   margin-bottom: 10px;
   padding: 5px 0px;
   background: rgba(0, 0, 0, 0.1);
@@ -195,7 +113,6 @@
   display: flex;
   flex-direction: column;
   gap: 0px;
-  /* Vertical gap between the 3 arrows */
 }
 
 .avatar-preview {
@@ -208,20 +125,18 @@
 
 .preview-hero {
   transform: scale(2);
-  /* Scales up the avatar in the center */
 }
 
 /* --- ABSOLUTE POSITIONED DICE --- */
 .dice-container {
-  position: absolute; /* Keeps your container in the corner */
+  position: absolute;
   top: 10px;
   right: 10px;
-  width: 60px; /* Give it enough space for the tooltip */
+  width: 60px;
   height: 60px;
 }
 
 .dice-btn {
-  /* Remove absolute positioning here so it stays inside the container */
   width: 40px;
   cursor: pointer;
   opacity: 0.6;
@@ -236,12 +151,9 @@
 .dice-text {
   visibility: hidden;
   opacity: 0;
-
-  /* Position to the left of the button */
   position: absolute;
   top: 5px;
-  right: 110%; /* Pushes it to the left of the button */
-
+  right: 110%;
   background-color: #3b71ca;
   color: white;
   padding: 6px 12px;
@@ -251,16 +163,14 @@
   pointer-events: none;
   transition: opacity 0.2s;
   z-index: 10;
-
   text-shadow: 2px 2px 0px rgba(144, 144, 144, 0.5);
 }
 
-/* The Triangle pointing to the right */
 .dice-text::after {
   content: "";
   position: absolute;
   top: 50%;
-  left: 100%; /* Sits on the right edge of the text box */
+  left: 100%;
   margin-top: -5px;
   border-width: 5px;
   border-style: solid;
@@ -277,7 +187,6 @@
   width: 100%;
   height: 65px;
   background: #5ce636;
-  /* Bright Skribbl green */
   color: white;
   font-size: 32px;
   font-weight: bold;
@@ -322,13 +231,10 @@
   width: 100%;
   height: 45px;
   box-sizing: border-box;
-
   padding: 0 12px;
   margin-bottom: 12px;
-
   border: none;
   border-radius: 5px;
-
   font-size: 18px;
 }
 
@@ -336,17 +242,13 @@
   display: block;
   width: 100%;
   height: 45px;
-
   background: #2c8de7;
   color: white;
-
   border: none;
   border-radius: 5px;
-
   font-size: 20px;
   font-weight: bold;
   cursor: pointer;
-
   font-family: "Varela Round", sans-serif;
   text-shadow: 2px 2px 0px rgba(144, 144, 144, 0.5);
 }
@@ -355,7 +257,7 @@
   background-color: #1671c5;
 }
 
-/* Container for all notifications */
+/* --- TOAST NOTIFICATIONS --- */
 .toast-container {
   position: fixed;
   bottom: 20px;
@@ -366,7 +268,6 @@
   gap: 10px;
 }
 
-/* Individual error style */
 .toast-error {
   min-width: 250px;
   background-color: #ff4d4d;
@@ -376,7 +277,6 @@
   font-weight: bold;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   animation: slideIn 0.3s ease-out;
-
   text-shadow: 2px 2px 0px rgba(144, 144, 144, 0.5);
 }
 
@@ -389,4 +289,193 @@
     transform: translateX(0);
     opacity: 1;
   }
+}
+
+/* --- LOBBY WRAPPER & COLUMNS --- */
+.lobby-wrapper {
+  display: flex;
+  gap: 7px;
+  width: 85vw;
+  max-width: 1300px;
+  margin: 0 auto;
+  font-family: "Varela Round", sans-serif;
+  background-color: transparent;
+}
+
+/* Left Column: Players */
+.players-column {
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.player-card {
+  background-color: white;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  height: 50px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.player-rank {
+  font-weight: bold;
+  font-size: 14px;
+  width: 30px;
+}
+
+.player-info {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.player-name {
+  font-weight: bold;
+  font-size: 14px;
+  color: #333;
+}
+
+.host-name {
+  color: #4998ff;
+}
+
+.player-points {
+  font-size: 12px;
+  color: #666;
+}
+
+/* Middle Column: Settings */
+.settings-column {
+  flex-grow: 1;
+  background-color: #353b50;
+  border-radius: 2px;
+  display: flex;
+  flex-direction: column;
+  padding: 7px;
+  color: white;
+}
+
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.setting-row label {
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.setting-row select {
+  width: 50%;
+  padding: 6px;
+  border-radius: 4px;
+  background-color: white;
+  color: #333;
+  font-size: 14px;
+  outline: none;
+  border: 1px solid gray;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  height: 50px;
+}
+
+.action-buttons button {
+  border: none;
+  border-radius: 4px;
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.start-btn {
+  flex-grow: 2;
+  background-color: #55c936;
+  border-bottom: 4px solid #43a329;
+}
+
+.start-btn:hover {
+  transform: scale(1);
+}
+
+.start-btn:active {
+  transform: translateY(2px);
+  border-bottom: 2px solid #43a329;
+}
+
+.disabled-btn {
+  background-color: #888;
+  border-bottom: 4px solid #666;
+  cursor: not-allowed;
+}
+
+.invite-btn {
+  flex-grow: 1;
+  width: 20%;
+  background-color: #2988e6;
+  border-bottom: 4px solid #1c6ab8;
+}
+
+.invite-btn:hover {
+  background-color: #1671c5;
+}
+
+.invite-btn:active {
+  transform: translateY(2px);
+  border-bottom: 2px solid #1c6ab8;
+}
+
+/* Right Column: Chat */
+.chat-column {
+  width: 300px;
+  background-color: white;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chat-messages {
+  flex-grow: 1;
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.system-message {
+  color: #f39c12;
+  font-weight: bold;
+  font-size: 14px;
+  margin: 0;
+}
+
+.chat-input-wrapper {
+  padding: 8px;
+  border-top: 1px solid #ccc;
+}
+
+.chat-input-wrapper input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  outline: none;
 }

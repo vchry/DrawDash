@@ -29,10 +29,14 @@ const WORD_BANK = [
   "bicycle",
 ];
 
+// Updated Player interface to include sprite sheet configurations
 interface Player {
   id: string;
   username: string;
   score: number;
+  body: number;
+  eyes: number;
+  mouth: number;
 }
 
 interface RoomState {
@@ -131,7 +135,8 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("create_room", ({ username }: { username: string }) => {
+  // Updated handler: Expects avatar values from the form creator
+  socket.on("create_room", ({ username, avatar }: { username: string; avatar?: { body: number; eyes: number; mouth: number } }) => {
     const roomId = generateRoomId();
     socket.join(roomId);
 
@@ -148,7 +153,16 @@ io.on("connection", (socket) => {
     };
 
     const room = activeRooms[roomId] as RoomState;
-    room.players.push({ id: socket.id, username, score: 0 });
+    
+    // Save the player object including structural default fallbacks
+    room.players.push({ 
+      id: socket.id, 
+      username, 
+      score: 0,
+      body: avatar?.body ?? 0,
+      eyes: avatar?.eyes ?? 0,
+      mouth: avatar?.mouth ?? 0
+    });
 
     console.log(`🏗️  Room created: ${roomId} by ${username}`);
     socket.emit("room_created", { roomId });
@@ -161,9 +175,10 @@ io.on("connection", (socket) => {
     });
   });
 
+  // Updated handler: Expects avatar data payload from the arriving client
   socket.on(
     "join_room",
-    ({ roomId, username }: { roomId: string; username: string }) => {
+    ({ roomId, username, avatar }: { roomId: string; username: string; avatar?: { body: number; eyes: number; mouth: number } }) => {
       const room = activeRooms[roomId] as RoomState | undefined;
 
       // If room doesn't exist, notify the client instead of creating one
@@ -175,7 +190,14 @@ io.on("connection", (socket) => {
       socket.join(roomId);
 
       if (!room.players.some((p) => p.id === socket.id)) {
-        room.players.push({ id: socket.id, username, score: 0 });
+        room.players.push({ 
+          id: socket.id, 
+          username, 
+          score: 0,
+          body: avatar?.body ?? 0,
+          eyes: avatar?.eyes ?? 0,
+          mouth: avatar?.mouth ?? 0
+        });
       }
 
       console.log(`👤 ${username} joined room: ${roomId}`);
@@ -321,5 +343,5 @@ io.on("connection", (socket) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log("🚀 Server running on http://localhost:" + PORT);
 });

@@ -24,8 +24,8 @@ function App() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [roomState, setRoomState] = useState<RoomState | null>(null);
   const [timer, setTimer] = useState(40);
-  
-  // NEW: State to hold server errors for the LobbyForm
+
+  // State to hold server errors for the LobbyForm
   const [roomError, setRoomError] = useState("");
 
   const [selectedAvatar, setSelectedAvatar] = useState({
@@ -35,40 +35,17 @@ function App() {
   });
 
   const onPrevBody = () =>
-    setSelectedAvatar((a) => ({
-      ...a,
-      body: (a.body + 7) % 8,
-    }));
-
+    setSelectedAvatar((a) => ({ ...a, body: (a.body + 7) % 8 }));
   const onNextBody = () =>
-    setSelectedAvatar((a) => ({
-      ...a,
-      body: (a.body + 1) % 8,
-    }));
-
+    setSelectedAvatar((a) => ({ ...a, body: (a.body + 1) % 8 }));
   const onPrevEyes = () =>
-    setSelectedAvatar((a) => ({
-      ...a,
-      eyes: (a.eyes + 7) % 8,
-    }));
-
+    setSelectedAvatar((a) => ({ ...a, eyes: (a.eyes + 7) % 8 }));
   const onNextEyes = () =>
-    setSelectedAvatar((a) => ({
-      ...a,
-      eyes: (a.eyes + 1) % 8,
-    }));
-
+    setSelectedAvatar((a) => ({ ...a, eyes: (a.eyes + 1) % 8 }));
   const onPrevMouth = () =>
-    setSelectedAvatar((a) => ({
-      ...a,
-      mouth: (a.mouth + 7) % 8,
-    }));
-
+    setSelectedAvatar((a) => ({ ...a, mouth: (a.mouth + 7) % 8 }));
   const onNextMouth = () =>
-    setSelectedAvatar((a) => ({
-      ...a,
-      mouth: (a.mouth + 1) % 8,
-    }));
+    setSelectedAvatar((a) => ({ ...a, mouth: (a.mouth + 1) % 8 }));
 
   const onRandomize = () => {
     setSelectedAvatar({
@@ -105,8 +82,6 @@ function App() {
 
     socket.emit("create_room", { username, avatar: selectedAvatar });
 
-    // Wait for server confirmation before marking user as joined so
-    // PregameLobby renders reliably after roomState arrives.
     socket.once("room_created", (data: { roomId: string }) => {
       setRoomId(data.roomId);
       setIsJoined(true);
@@ -117,13 +92,10 @@ function App() {
     e.preventDefault();
     if (!username.trim() || !roomId.trim()) return;
 
-    socket.emit("join_room", { roomId, username });
+    socket.emit("join_room", { roomId, username, avatar: selectedAvatar });
 
-    // NEW: Handle failure using the custom toast instead of alert
     socket.once("join_failed", (data: { reason?: string }) => {
       setRoomError(data?.reason || "Invalid Room ID");
-      
-      // Clear the error state after 3 seconds so it can be triggered again if needed
       setTimeout(() => setRoomError(""), 3000);
     });
 
@@ -153,13 +125,10 @@ function App() {
 
   function shuffle(array: number[]) {
     const arr = [...array];
-
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
-
     return arr;
   }
 
@@ -181,45 +150,46 @@ function App() {
       <div className="logo-container">
         <img src={logo} alt="DrawDash Logo" className="logo" />
       </div>
-      <div className="hero-avatar">
-        {avatars.map((avatar, index) => (
-          <div className="hero" key={index}>
-            <div
-              className="layer body"
-              style={{
-                backgroundImage: `url(${avatarSprite})`,
-                ...getSpritePosition(avatar.body, 0),
-              }}
-            />
 
-            <div
-              className="layer eyes"
-              style={{
-                backgroundImage: `url(${avatarSprite})`,
-                ...getSpritePosition(avatar.eyes, 1),
-              }}
-            />
-
-            <div
-              className="layer mouth"
-              style={{
-                backgroundImage: `url(${avatarSprite})`,
-                ...getSpritePosition(avatar.mouth, 2),
-              }}
-            />
-
-            {avatar.owner !== null && (
+      {/* Conditionally render the 8 avatars ONLY when not joined in a room */}
+      {!isJoined && (
+        <div className="hero-avatar">
+          {avatars.map((avatar, index) => (
+            <div className="hero" key={index}>
               <div
-                className="layer owner"
+                className="layer body"
                 style={{
                   backgroundImage: `url(${avatarSprite})`,
-                  ...getSpritePosition(avatar.owner, 3),
+                  ...getSpritePosition(avatar.body, 0),
                 }}
               />
-            )}
-          </div>
-        ))}
-      </div>
+              <div
+                className="layer eyes"
+                style={{
+                  backgroundImage: `url(${avatarSprite})`,
+                  ...getSpritePosition(avatar.eyes, 1),
+                }}
+              />
+              <div
+                className="layer mouth"
+                style={{
+                  backgroundImage: `url(${avatarSprite})`,
+                  ...getSpritePosition(avatar.mouth, 2),
+                }}
+              />
+              {avatar.owner !== null && (
+                <div
+                  className="layer owner"
+                  style={{
+                    backgroundImage: `url(${avatarSprite})`,
+                    ...getSpritePosition(avatar.owner, 3),
+                  }}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       {!isJoined ? (
         <LobbyForm
@@ -238,7 +208,7 @@ function App() {
           onRandomize={onRandomize}
           onPlay={handleJoinRoom}
           onCreateRoom={handleCreateRoom}
-          serverError={roomError} // NEW: Pass the error state to LobbyForm
+          serverError={roomError}
         />
       ) : roomState && !roomState.gameStarted ? (
         <PregameLobby

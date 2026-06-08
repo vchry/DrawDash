@@ -2,6 +2,11 @@ export interface Player {
   id: string;
   username: string;
   score: number;
+  
+  // Avatar customization configuration (0 to 9)
+  body?: number;
+  eyes?: number;
+  mouth?: number;
 }
 
 export interface RoomState {

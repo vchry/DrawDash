@@ -1,5 +1,12 @@
-import React from 'react';
-import type { Player, RoomState } from '../types/game';
+import React, { useState } from "react";
+import type { Player, RoomState } from "../types/game";
+import Avatar from "./Avatar"; // Adjust the import path as necessary
+
+import Players from "../assets/person.gif";
+import Drawtime from "../assets/drawtime.gif";
+import Hint from "../assets/hint.gif";
+import Round from "../assets/round.gif";
+import WordCount from "../assets/word count.gif";
 
 interface PregameLobbyProps {
   roomId: string;
@@ -18,53 +25,171 @@ export default function PregameLobby({
   onDurationChange,
   onStartGame,
 }: PregameLobbyProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyRoomId = () => {
+    navigator.clipboard.writeText(roomId);
+    setCopied(true);
+    // Reset the "Copied!" visual text back to the Room ID after 2 seconds
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
-    <div className="pregame-lobby">
-      <h2>Welcome to Room: <span style={{ color: '#007bff' }}>{roomId}</span></h2>
-      <p style={{ color: '#747d8c' }}>Setup your configurations and wait for matches.</p>
-      
-      <div className="settings-card">
-        <h3>⚙️ Match Configurations</h3>
-        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Round Timer Duration:</label>
-        <select 
-          value={roomState.roundDuration} 
-          onChange={onDurationChange} 
-          disabled={!isHost}
-          style={{ width: '100%', padding: '0.6rem', fontSize: '1rem', borderRadius: '4px', border: '1px solid #ccc' }}
-        >
-          <option value="20">20 Seconds (Fast pace)</option>
-          <option value="40">40 Seconds (Normal default)</option>
-          <option value="60">60 Seconds (Relaxed drawing)</option>
-          <option value="90">90 Seconds (Long turns)</option>
-        </select>
+    <div className="lobby-wrapper">
+      {/* LEFT COLUMN: Players */}
+      <div className="players-column">
+        {players.map((p, index) => {
+          const isCurrentPlayerHost = p.id === roomState.hostId;
+
+          return (
+            <div key={p.id} className="player-card">
+              <div className="player-rank">#{index + 1}</div>
+              <div className="player-info">
+                <span
+                  className={`player-name ${isCurrentPlayerHost ? "host-name" : ""}`}
+                >
+                  {p.username} {isCurrentPlayerHost && "(You)"}
+                </span>
+                <span className="player-points">0 points</span>
+              </div>
+              
+              {/* Dynamic Sprite Avatar Container */}
+              <div className="player-avatar-container">
+                <Avatar
+                  body={p.body ?? 0}   // Defaults to 0 if not provided in player object
+                  eyes={p.eyes ?? 0}   // Defaults to 0 if not provided in player object
+                  mouth={p.mouth ?? 0} // Defaults to 0 if not provided in player object
+                  special={isCurrentPlayerHost ? 0 : null} // Gives row 4, col 0 asset to the host
+                  size={60}            // Resized down slightly to cleanly fit inside a player card list
+                />
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      <div style={{ margin: '1.5rem 0', textAlign: 'left' }}>
-        <h3>👥 Players Connected ({players.length}):</h3>
-        <ul style={{ background: '#f1f2f6', padding: '1rem', borderRadius: '6px', listStyleType: 'none', margin: 0, display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-          {players.map((p) => (
-            <li key={p.id} style={{ background: 'white', padding: '0.5rem 1rem', borderRadius: '20px', border: '1px solid #ced4da', display: 'flex', alignItems: 'center' }}>
-              <span>🟢 {p.username}</span>
-              {p.id === roomState.hostId && <span className="host-badge">👑 HOST</span>}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div style={{ marginTop: '2rem' }}>
-        {isHost ? (
-          <button 
-            onClick={onStartGame} 
-            className="start-btn"
-            disabled={players.length < 2}
-          >
-            {players.length < 2 ? '⚠️ Need at least 2 Players' : '🚀 Start Match Now'}
-          </button>
-        ) : (
-          <div style={{ background: '#ffeaa7', padding: '1rem', borderRadius: '6px', fontWeight: 'bold', color: '#d63031' }}>
-            ⏳ Waiting for the Host to start the game...
+      {/* MIDDLE COLUMN: Settings */}
+      <div className="settings-column">
+        <div className="settings-list">
+          <div className="setting-row">
+            <label>
+              <img src={Players} alt="Player Gif" width={30} /> Players
+            </label>
+            <select disabled={!isHost} defaultValue="6">
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
           </div>
-        )}
+          <div className="setting-row">
+            <label>
+              <img src={Drawtime} alt="Player Gif" width={30} /> Drawtime
+            </label>
+            <select
+              value={roomState.roundDuration}
+              onChange={onDurationChange}
+              disabled={!isHost}
+            >
+              <option value="15">15</option>
+              <option value="30">30</option>
+              <option value="45">45</option>
+              <option value="60">60</option>
+              <option value="75">75</option>
+              <option value="90">90</option>
+              <option value="105">105</option>
+              <option value="120">120</option>
+              <option value="135">135</option>
+              <option value="150">150</option>
+              <option value="165">165</option>
+              <option value="180">180</option>
+              <option value="195">195</option>
+              <option value="210">210</option>
+              <option value="225">225</option>
+              <option value="240">240</option>
+            </select>
+          </div>
+          <div className="setting-row">
+            <label>
+              <img src={Round} alt="Player Gif" width={30} /> Rounds
+            </label>
+            <select disabled={!isHost} defaultValue="3">
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+          </div>
+          <div className="setting-row">
+            <label>
+              <img src={WordCount} alt="Player Gif" width={30} /> Word Count
+            </label>
+            <select disabled={!isHost} defaultValue="3">
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </div>
+          <div className="setting-row">
+            <label>
+              <img src={Hint} alt="Player Gif" width={30} /> Hints
+            </label>
+            <select disabled={!isHost} defaultValue="2">
+              <option value="0">0</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="action-buttons">
+          {isHost ? (
+            <button className="start-btn" onClick={onStartGame}>
+              Start!
+            </button>
+          ) : (
+            <button className="start-btn disabled-btn" disabled>
+              Waiting for Host...
+            </button>
+          )}
+          
+          {/* UPDATED: Displays the dynamic Room ID text or clipboard verification state */}
+          <button
+            className="invite-btn"
+            onClick={handleCopyRoomId}
+            style={{ fontWeight: "bold" }}
+          >
+            {copied ? "📋 Copied!" : `Room ID: ${roomId}`}
+          </button>
+        </div>
+      </div>
+
+      {/* RIGHT COLUMN: Chat */}
+      <div className="chat-column">
+        <div className="chat-messages">
+          <p className="system-message">
+            {players.find((p) => p.id === roomState.hostId)?.username ||
+              "Someone"}{" "}
+            is now the room owner!
+          </p>
+        </div>
+        <div className="chat-input-wrapper">
+          <input type="text" placeholder="Type your guess here..." disabled />
+        </div>
       </div>
     </div>
   );
