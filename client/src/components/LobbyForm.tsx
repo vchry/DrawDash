@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import diceGif from "../assets/dice.gif";
 import arrowGif from "../assets/arrows.gif";
 import Avatar from "./Avatar";
@@ -25,6 +25,7 @@ interface LobbyFormProps {
   onPlay: (e: React.FormEvent) => void;
   onCreateRoom: () => void;
   onJoinRoom: (e: React.FormEvent) => void;
+  serverError?: string; // Add this to accept errors from the parent
 }
 
 export default function LobbyForm({
@@ -43,6 +44,7 @@ export default function LobbyForm({
   onRandomize,
   onPlay,
   onCreateRoom,
+  serverError, // Destructure the new prop
 }: LobbyFormProps) {
   const [error, setError] = useState("");
 
@@ -50,6 +52,13 @@ export default function LobbyForm({
     setError(msg);
     setTimeout(() => setError(""), 3000);
   };
+
+  // NEW: Watch for external errors (like "Invalid Room ID") and trigger the toast
+  useEffect(() => {
+    if (serverError) {
+      triggerError(serverError);
+    }
+  }, [serverError]);
 
   const handleCreateRoom = () => {
     if (!username.trim()) {

@@ -24,13 +24,15 @@ function App() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [roomState, setRoomState] = useState<RoomState | null>(null);
   const [timer, setTimer] = useState(40);
+  
+  // NEW: State to hold server errors for the LobbyForm
+  const [roomError, setRoomError] = useState("");
 
   const [selectedAvatar, setSelectedAvatar] = useState({
     body: 0,
     eyes: 0,
     mouth: 0,
   });
-
 
   const onPrevBody = () =>
     setSelectedAvatar((a) => ({
@@ -76,7 +78,6 @@ function App() {
     });
   };
 
-
   useEffect(() => {
     socket.on("room_state_update", (updatedRoom: RoomState) => {
       setPlayers(updatedRoom.players);
@@ -118,8 +119,12 @@ function App() {
 
     socket.emit("join_room", { roomId, username });
 
+    // NEW: Handle failure using the custom toast instead of alert
     socket.once("join_failed", (data: { reason?: string }) => {
-      alert(data?.reason || "Invalid Room ID");
+      setRoomError(data?.reason || "Invalid Room ID");
+      
+      // Clear the error state after 3 seconds so it can be triggered again if needed
+      setTimeout(() => setRoomError(""), 3000);
     });
 
     socket.once("join_success", (data: { roomId: string }) => {
@@ -158,12 +163,9 @@ function App() {
     return arr;
   }
 
-
   const [avatars] = useState(() => {
     const eyeIndexes = shuffle([0, 1, 2, 3, 4, 5, 6, 7]);
-
     const mouthIndexes = shuffle([0, 1, 2, 3, 4, 5, 6, 7]);
-
     const ownerIndex = Math.floor(Math.random() * 8);
 
     return Array.from({ length: 8 }, (_, i) => ({
@@ -174,27 +176,11 @@ function App() {
     }));
   });
 
-  // const eyeIndexes = shuffle([0, 1, 2, 3, 4, 5, 6, 7]);
-
-  // const mouthIndexes = shuffle([0, 1, 2, 3, 4, 5, 6, 7]);
-
-  // const ownerIndex = Math.floor(Math.random() * 8);
-
-  // const avatars = Array.from({ length: 8 }, (_, i) => ({
-  //   body: i,
-  //   eyes: eyeIndexes[i],
-  //   mouth: mouthIndexes[i],
-  //   owner: i === ownerIndex ? 0 : null,
-  // }));
-
-  // console.log(avatars);
-
   return (
     <div className="game-container">
       <div className="logo-container">
         <img src={logo} alt="DrawDash Logo" className="logo" />
       </div>
-      {/* <h1 className="title">✏️ Skribbl Clone</h1> */}
       <div className="hero-avatar">
         {avatars.map((avatar, index) => (
           <div className="hero" key={index}>
@@ -234,7 +220,6 @@ function App() {
           </div>
         ))}
       </div>
-      {/* <hr className="divider" /> */}
 
       {!isJoined ? (
         <LobbyForm
@@ -253,6 +238,7 @@ function App() {
           onRandomize={onRandomize}
           onPlay={handleJoinRoom}
           onCreateRoom={handleCreateRoom}
+          serverError={roomError} // NEW: Pass the error state to LobbyForm
         />
       ) : roomState && !roomState.gameStarted ? (
         <PregameLobby
