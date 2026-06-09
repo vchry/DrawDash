@@ -147,9 +147,14 @@ function App() {
 
   return (
     <div className="game-container">
-      <div className="header">
+      <div className={isJoined ? "header-left" : "header"}>
         <div className="logo-container">
-          <img src={logo} alt="DrawDash Logo" className="logo" />
+          <img
+            src={logo}
+            alt="DrawDash Logo"
+            // This dynamically switches between 'logo' and 'logo-small'
+            className={isJoined ? "logo-small" : "logo"}
+          />
         </div>
 
         {/* Conditionally render the 8 avatars ONLY when not joined in a room */}
