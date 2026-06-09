@@ -147,50 +147,51 @@ function App() {
 
   return (
     <div className="game-container">
-      <div className="logo-container">
-        <img src={logo} alt="DrawDash Logo" className="logo" />
-      </div>
+      <div className="header">
+        <div className="logo-container">
+          <img src={logo} alt="DrawDash Logo" className="logo" />
+        </div>
 
-      {/* Conditionally render the 8 avatars ONLY when not joined in a room */}
-      {!isJoined && (
-        <div className="hero-avatar">
-          {avatars.map((avatar, index) => (
-            <div className="hero" key={index}>
-              <div
-                className="layer body"
-                style={{
-                  backgroundImage: `url(${avatarSprite})`,
-                  ...getSpritePosition(avatar.body, 0),
-                }}
-              />
-              <div
-                className="layer eyes"
-                style={{
-                  backgroundImage: `url(${avatarSprite})`,
-                  ...getSpritePosition(avatar.eyes, 1),
-                }}
-              />
-              <div
-                className="layer mouth"
-                style={{
-                  backgroundImage: `url(${avatarSprite})`,
-                  ...getSpritePosition(avatar.mouth, 2),
-                }}
-              />
-              {avatar.owner !== null && (
+        {/* Conditionally render the 8 avatars ONLY when not joined in a room */}
+        {!isJoined && (
+          <div className="hero-avatar">
+            {avatars.map((avatar, index) => (
+              <div className="hero" key={index}>
                 <div
-                  className="layer owner"
+                  className="layer body"
                   style={{
                     backgroundImage: `url(${avatarSprite})`,
-                    ...getSpritePosition(avatar.owner, 3),
+                    ...getSpritePosition(avatar.body, 0),
                   }}
                 />
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
+                <div
+                  className="layer eyes"
+                  style={{
+                    backgroundImage: `url(${avatarSprite})`,
+                    ...getSpritePosition(avatar.eyes, 1),
+                  }}
+                />
+                <div
+                  className="layer mouth"
+                  style={{
+                    backgroundImage: `url(${avatarSprite})`,
+                    ...getSpritePosition(avatar.mouth, 2),
+                  }}
+                />
+                {avatar.owner !== null && (
+                  <div
+                    className="layer owner"
+                    style={{
+                      backgroundImage: `url(${avatarSprite})`,
+                      ...getSpritePosition(avatar.owner, 3),
+                    }}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
       {!isJoined ? (
         <LobbyForm
           username={username}

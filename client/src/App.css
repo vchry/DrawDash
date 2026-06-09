@@ -1,16 +1,36 @@
 /* --- MAIN WRAPPER --- */
 .game-container {
   min-height: 100vh;
+  
+  /* 1. Turn flex back on */
   display: flex;
-  flex-direction: column;
+  /* 2. Stack the header and form vertically */
+  flex-direction: column; 
+  /* 3. Center items horizontally */
   align-items: center;
-  justify-content: center;
+  /* 4. Center items vertically if desired, or keep spacing fluid */
+  justify-content: flex-start; 
+
   background-image: url("./assets/bg.png");
   background-size: cover;
   background-position: center;
   text-align: center;
+  padding: 40px 0 0 0;
+  box-sizing: border-box;
 }
 
+.header {
+  /* Temporary debugging border */
+  border: 1px solid red; 
+  
+  /* Ensure the header expands full width to help center its inner elements */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  
+  margin-bottom: 30px;
+}
 /* --- LOGO & AVATARS --- */
 .logo {
   width: 35vw;
@@ -25,6 +45,7 @@
   transform-origin: center top;
   flex-wrap: wrap;
   margin-top: 0px;
+  margin-bottom: -35px;
   filter: drop-shadow(4px 4px 0px rgba(1, 1, 0, 0.3));
 }
 
@@ -44,10 +65,18 @@
   image-rendering: pixelated;
 }
 
-.body { z-index: 1; }
-.eyes { z-index: 2; }
-.mouth { z-index: 3; }
-.owner { z-index: 4; }
+.body {
+  z-index: 1;
+}
+.eyes {
+  z-index: 2;
+}
+.mouth {
+  z-index: 3;
+}
+.owner {
+  z-index: 4;
+}
 
 /* --- THE LOBBY CARD --- */
 .lobby-card {

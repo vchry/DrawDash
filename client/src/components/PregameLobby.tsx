@@ -92,7 +92,7 @@ export default function PregameLobby({
               <img src={Drawtime} alt="Player Gif" width={30} /> Drawtime
             </label>
             <select
-              value={roomState.roundDuration}
+              value={roomState.roundDuration || 90}
               onChange={onDurationChange}
               disabled={!isHost}
             >
