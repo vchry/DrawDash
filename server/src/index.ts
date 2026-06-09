@@ -145,19 +145,19 @@ io.on("connection", (socket) => {
       hostId: socket.id,
       currentArtist: null,
       currentWord: "",
-      timeLeft: 40,
-      roundDuration: 40,
+      timeLeft: 90,
+      roundDuration: 90,
       gameStarted: false,
       artistIndex: -1,
       correctGuessers: [],
     };
 
     const room = activeRooms[roomId] as RoomState;
-    
+
     // Save the player object including structural default fallbacks
-    room.players.push({ 
-      id: socket.id, 
-      username, 
+    room.players.push({
+      id: socket.id,
+      username,
       score: 0,
       body: avatar?.body ?? 0,
       eyes: avatar?.eyes ?? 0,
@@ -190,9 +190,9 @@ io.on("connection", (socket) => {
       socket.join(roomId);
 
       if (!room.players.some((p) => p.id === socket.id)) {
-        room.players.push({ 
-          id: socket.id, 
-          username, 
+        room.players.push({
+          id: socket.id,
+          username,
           score: 0,
           body: avatar?.body ?? 0,
           eyes: avatar?.eyes ?? 0,

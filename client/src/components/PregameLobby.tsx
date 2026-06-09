@@ -52,7 +52,7 @@ export default function PregameLobby({
                 </span>
                 <span className="player-points">0 points</span>
               </div>
-              
+
               {/* Dynamic Sprite Avatar Container */}
               <div className="player-avatar-container">
                 <Avatar
@@ -92,7 +92,7 @@ export default function PregameLobby({
               <img src={Drawtime} alt="Player Gif" width={30} /> Drawtime
             </label>
             <select
-              value={roomState.roundDuration || 90}
+              value={roomState.roundDuration}
               onChange={onDurationChange}
               disabled={!isHost}
             >
@@ -166,7 +166,7 @@ export default function PregameLobby({
               Waiting for Host...
             </button>
           )}
-          
+
           {/* UPDATED: Displays the dynamic Room ID text or clipboard verification state */}
           <button
             className="invite-btn"
