@@ -1,15 +1,15 @@
 /* --- MAIN WRAPPER --- */
 .game-container {
   min-height: 100vh;
-  
+
   /* 1. Turn flex back on */
   display: flex;
   /* 2. Stack the header and form vertically */
-  flex-direction: column; 
+  flex-direction: column;
   /* 3. Center items horizontally */
   align-items: center;
   /* 4. Center items vertically if desired, or keep spacing fluid */
-  justify-content: flex-start; 
+  justify-content: flex-start;
 
   background-image: url("./assets/bg.png");
   background-size: cover;
@@ -23,27 +23,27 @@
 .header {
   /* Temporary debugging border */
   /* border: 1px solid red;  */
-  
+
   /* Ensure the header expands full width to help center its inner elements */
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  
+
   margin-bottom: 30px;
 }
 
 .header-left {
-    /* Temporary debugging border */
+  /* Temporary debugging border */
   /* border: 1px solid red;  */
-  
+
   /* Ensure the header expands full width to help center its inner elements */
   width: 100%;
   display: flex;
   /* flex-direction: column; */
   align-items: center;
   justify-content: left;
-  
+
   margin-bottom: 15px;
   /* padding-left: 120px; */
 }
@@ -527,4 +527,69 @@
   border-radius: 4px;
   box-sizing: border-box;
   outline: none;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  width: calc(100vw - 240px);
+  background: white;
+  height: 48px;
+  border-radius: 3px;
+  /* padding-left: -10px; */
+  font-family: "Varela Round", sans-serif;
+  justify-content: space-between;
+}
+
+.timer-round {
+  display: flex;
+  align-items: center; /* vertically center clock and text */
+  gap: 12px;
+}
+
+/* Clock container */
+.timer {
+  position: relative;
+  width: 60px;
+  /* height: 70px; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Number in center of clock */
+.time {
+  position: absolute;
+  top: 57%;
+  left: 53%;
+  transform: translate(-53%, -57%);
+  font-size: 24px;
+  font-weight: bold;
+  pointer-events: none;
+  font-family: "Varela Round", sans-serif;
+}
+
+/* Round text */
+.round {
+  display: flex;
+  align-items: center; /* vertical centering */
+  height: 70px;
+  padding-top: 5px;
+}
+
+.round h3 {
+  margin: 0;
+  font-size: 18px;
+  font-family: "Varela Round", sans-serif;
+}
+
+.word-area {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: "bold";
+  font-size: "16px";
+  letter-spacing: "1px";
+
+  position: absolute;
+  left: 50%;
+  transform: translatex(-50%);
 }

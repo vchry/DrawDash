@@ -19,7 +19,6 @@ export default function Chat({ socket, roomId, username }: ChatProps) {
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    // Append incoming messages to our feed state
     socket.on('chat_message', (message: Message) => {
       setMessages((prev) => [...prev, message]);
     });
@@ -29,7 +28,6 @@ export default function Chat({ socket, roomId, username }: ChatProps) {
     };
   }, [socket]);
 
-  // Autoscroll chat box down when new messages land
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);

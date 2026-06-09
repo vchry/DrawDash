@@ -4,9 +4,9 @@ import type { Player, RoomState } from "./types/game";
 
 // Layout subcomponents
 import LobbyForm from "./components/LobbyForm";
-import GameSetting from "./components/GameSetting";
-import GameHeader from "./components/GameHeader";
-import ScoreBoard from "./components/Scoreboard";
+import PregameLobby from "./components/PregameLobby";
+import TopBar from "./components/TopBar";
+import Scoreboard from "./components/Scoreboard";
 import Canvas from "./components/Canvas";
 import Chat from "./components/Chat";
 
@@ -14,7 +14,6 @@ import logo from "./assets/logo.gif";
 import avatarSprite from "./assets/avatar-sprites.gif";
 
 import "./App.css";
-import TopBar from "./components/TopBar";
 
 const socket: Socket = io("http://localhost:3001");
 
@@ -145,18 +144,26 @@ function App() {
   });
 
   return (
-    <div className="game-container">
+    <div
+      className="game-container"
+      style={{
+        padding: "1rem",
+        boxSizing: "border-box",
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+      }}
+    >
       <div className={isJoined ? "header-left" : "header"}>
         <div className="logo-container">
           <img
             src={logo}
             alt="DrawDash Logo"
-            // This dynamically switches between 'logo' and 'logo-small'
             className={isJoined ? "logo-small" : "logo"}
           />
         </div>
 
-        {/* Conditionally render the 8 avatars ONLY when not joined in a room */}
         {!isJoined && (
           <div className="hero-avatar">
             {avatars.map((avatar, index) => (
@@ -196,6 +203,7 @@ function App() {
           </div>
         )}
       </div>
+
       {!isJoined ? (
         <LobbyForm
           username={username}
@@ -216,27 +224,52 @@ function App() {
           serverError={roomError}
         />
       ) : roomState ? (
-        <div className="game-layout-container">
-          {/* Top bar  */}
+        /* Persistent Unification Container Grid Layer */
+        <div
+          className="game-layout-container"
+          style={{
+            width: "100%",
+            maxWidth: "1150px",
+            display: "flex",
+            flexDirection: "column",
+            marginTop: "1rem",
+          }}
+        >
+          {/* 1. Global Interactive Top Counter Row */}
           <TopBar roomState={roomState} timer={timer} />
 
-          {/* 3 Column layout  */}
-          <div className="game-workspace-columns">
-            {/* left column Score bard */}
-            <div>
-              <ScoreBoard
+          {/* 2. Unified Persistent 3-Column Layout Row */}
+          <div
+            className="game-workspace-columns"
+            style={{
+              display: "flex",
+              gap: "1.25rem",
+              alignItems: "flex-start",
+              width: "100%",
+            }}
+          >
+            {/* Left Column Section: Dynamic Player List Scoreboard Cards */}
+            <div style={{ width: "260px", flexShrink: 0 }}>
+              <Scoreboard
                 players={players}
                 roomState={roomState}
                 currentUserId={socket.id}
               />
             </div>
-            {/* Middle section Dynamic */}
-            <div>
+
+            {/* Middle Column Section: Dynamic Content Toggle Panel */}
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                justifyContent: "center",
+                minWidth: "0",
+              }}
+            >
               {!roomState.gameStarted ? (
-                <GameSetting
+                <PregameLobby
                   roomId={roomId}
                   roomState={roomState}
-                  players={players}
                   isHost={isHost}
                   onDurationChange={handleDurationChange}
                   onStartGame={handleStartGame}
@@ -244,6 +277,12 @@ function App() {
               ) : (
                 <div
                   className={`canvas-wrapper ${!isArtist ? "canvas-disabled" : ""}`}
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                  }}
                 >
                   {!isArtist && (
                     <div
@@ -271,13 +310,13 @@ function App() {
               )}
             </div>
 
-            {/* right column */}
+            {/* Right Column Section: Shared Chat Messaging Engine */}
             <div style={{ width: "280px", flexShrink: 0 }}>
               <Chat socket={socket} roomId={roomId} username={username} />
             </div>
           </div>
         </div>
-      ) :  null }
+      ) : null}
     </div>
   );
 }
