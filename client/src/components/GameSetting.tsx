@@ -137,7 +137,7 @@ export default function PregameLobby({
             onClick={handleCopyRoomId}
             style={{ fontWeight: "bold" }}
           >
-            {copied ? "📋 Copied!" : `Room ID: ${roomId}`}
+            {copied ? "Copied!" : `Room ID: ${roomId}`}
           </button>
         </div>
     </div>

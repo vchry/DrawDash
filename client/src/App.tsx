@@ -98,10 +98,20 @@ function App() {
 
     const currentArtistId = roomState.currentArtist;
 
-    if (currentArtistId && currentArtistId !== previousArtistRef.current) {
-      previousArtistRef.current = currentArtistId;
-      setWordOptions(getRandomWordsFromAll(3));
-      setShowPhaseSequence(true);
+    // Trigger overlay setup when backend state switches into selecting phase
+    if (roomState.phase === "selecting") {
+      if (currentArtistId && currentArtistId !== previousArtistRef.current) {
+        previousArtistRef.current = currentArtistId;
+        // Generate options locally if this socket client is the designated artist
+        if (currentArtistId === socket.id) {
+          setWordOptions(getRandomWordsFromAll(3));
+        } else {
+          setWordOptions([]);
+        }
+        setShowPhaseSequence(true);
+      }
+    } else if (roomState.phase === "drawing") {
+      setShowPhaseSequence(false);
     }
   }, [roomState]);
 
@@ -196,12 +206,10 @@ function App() {
           <img
             src={logo}
             alt="DrawDash Logo"
-            // This dynamically switches between 'logo' and 'logo-small'
             className={isJoined ? "logo-small" : "logo"}
           />
         </div>
 
-        {/* Conditionally render the 8 avatars ONLY when not joined in a room */}
         {!isJoined && (
           <div className="hero-avatar">
             {avatars.map((avatar, index) => (
@@ -262,12 +270,9 @@ function App() {
         />
       ) : roomState ? (
         <div className="game-layout-container">
-          {/* Top bar  */}
           <Topbar roomState={roomState} timer={timer} />
 
-          {/* 3 Column layout  */}
           <div className="game-workspace-columns">
-            {/* left column Score bard */}
             <div>
               <ScoreBoard
                 players={players}
@@ -275,7 +280,7 @@ function App() {
                 currentUserId={socket.id}
               />
             </div>
-            {/* Middle section Dynamic */}
+
             <div className="middle-section">
               {showPhaseSequence && roomState && currentPlayer ? (
                 <GamePhaseSequence
@@ -324,56 +329,7 @@ function App() {
                 </div>
               )}
             </div>
-            {/* <div className="setting-div">
-              {showPhaseSequence && roomState && currentPlayer ? (
-                <GamePhaseSequence
-                  currentPlayer={currentPlayer}
-                  currentRound={currentRound}
-                  totalRounds={totalRounds}
-                  wordOptions={wordOptions}
-                  onWordSelected={handleWordSelected}
-                  onSequenceComplete={handlePhaseSequenceComplete}
-                  isArtist={isArtist}
-                />
-              ) : !roomState.gameStarted ? (
-                <GameSetting
-                  roomId={roomId}
-                  roomState={roomState}
-                  isHost={isHost}
-                  onDurationChange={handleDurationChange}
-                  onStartGame={handleStartGame}
-                />
-              ) : (
-                <div
-                  className={`canvas-wrapper ${!isArtist ? "canvas-disabled" : ""}`}
-                >
-                  {!isArtist && (
-                    <div
-                      className="canvas-locked-notice"
-                      style={{
-                        background: "#fff3cd",
-                        color: "#856404",
-                        padding: "0.5rem 1rem",
-                        borderRadius: "6px",
-                        border: "1px solid #ffeeba",
-                        fontWeight: "bold",
-                        marginBottom: "0.75rem",
-                        fontSize: "0.9rem",
-                        textAlign: "center",
-                        width: "100%",
-                        boxSizing: "border-box",
-                      }}
-                    >
-                      🔒 Canvas Locked: You are guessing! Use chat panel to
-                      input predictions.
-                    </div>
-                  )}
-                  <Canvas socket={socket} roomId={roomId} isArtist={isArtist} />
-                </div>
-              )}
-            </div> */}
 
-            {/* right column */}
             <div style={{ width: "280px", flexShrink: 0 }}>
               <Chat socket={socket} roomId={roomId} username={username} />
             </div>

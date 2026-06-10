@@ -29,7 +29,6 @@ const WORD_BANK = [
   "bicycle",
 ];
 
-// Updated Player interface to include sprite sheet configurations
 interface Player {
   id: string;
   username: string;
@@ -41,19 +40,17 @@ interface Player {
 
 interface RoomState {
   players: Player[];
-  hostId: string | null; // Socket ID of the room creator
+  hostId: string | null;
   currentArtist: string | null;
   currentWord: string;
   timeLeft: number;
-  roundDuration: number; // Customizable turn limit
-  gameStarted: boolean; // Gatekeeper flag
-  artistIndex: number; currentRound: number;
-  totalRounds: number; correctGuessers: string[];
-}
-
-interface Rooms {
-  [roomId: string]: RoomState;
-  [roomId: `interval_${string}`]: any;
+  roundDuration: number;
+  gameStarted: boolean;
+  artistIndex: number;
+  currentRound: number;
+  totalRounds: number;
+  correctGuessers: string[];
+  phase: "selecting" | "drawing"; // Added to track selection state
 }
 
 const activeRooms: any = {};
@@ -71,7 +68,7 @@ const generateRoomId = (): string => {
   return roomId;
 };
 
-// Core Game Loop Switcher
+// Phase 1: Starts the 15-second selection window for the artist
 const startTurn = (roomId: string) => {
   const room = activeRooms[roomId] as RoomState;
   if (!room || room.players.length === 0) return;
@@ -87,21 +84,73 @@ const startTurn = (roomId: string) => {
   }
 
   room.currentArtist = nextArtist.id;
-  room.currentWord = getRandomWord();
-  room.timeLeft = room.roundDuration; // Use the custom set configuration time
+  room.currentWord = "";
+  room.phase = "selecting";
+  room.timeLeft = 15; // Set 15 seconds strictly for choosing a word
+  room.correctGuessers = [];
 
-  if (activeRooms[`interval_${roomId}`]) {
+  // Clear any existing loops
+  if (activeRooms[`interval_${roomId}`])
     clearInterval(activeRooms[`interval_${roomId}`]);
-  }
+  if (activeRooms[`selection_${roomId}`])
+    clearInterval(activeRooms[`selection_${roomId}`]);
 
   io.to(roomId).emit("clear_canvas");
   io.to(roomId).emit("room_state_update", room);
+
   io.to(roomId).emit("chat_message", {
     sender: "System",
-    text: `${nextArtist.username} is drawing now!`,
+    text: `${nextArtist.username} is choosing a word!`,
     isCorrect: false,
   });
 
+  // Handle the 15-second selection countdown
+  activeRooms[`selection_${roomId}`] = setInterval(() => {
+    const activeRoom = activeRooms[roomId] as RoomState;
+    if (!activeRoom) {
+      clearInterval(activeRooms[`selection_${roomId}`]);
+      return;
+    }
+
+    activeRoom.timeLeft -= 1;
+    io.to(roomId).emit("timer_tick", activeRoom.timeLeft);
+
+    if (activeRoom.timeLeft <= 0) {
+      clearInterval(activeRooms[`selection_${roomId}`]);
+
+      // Auto-select a random word if the artist fails to choose in time
+      const fallbackWord = getRandomWord();
+      startDrawingRound(roomId, fallbackWord);
+    }
+  }, 1000);
+};
+
+// Phase 2: Starts the actual game round when a word is selected or auto-picked
+const startDrawingRound = (roomId: string, chosenWord: string) => {
+  const room = activeRooms[roomId] as RoomState;
+  if (!room) return;
+
+  if (activeRooms[`selection_${roomId}`]) {
+    clearInterval(activeRooms[`selection_${roomId}`]);
+  }
+
+  room.phase = "drawing";
+  room.currentWord = chosenWord;
+  room.timeLeft = room.roundDuration; // Reset timer to the custom gameplay duration (e.g., 90s)
+
+  io.to(roomId).emit("room_state_update", room);
+
+  // Alert clients that choice is locked and drawing begins
+  io.to(roomId).emit("word_selection_confirmed", { word: chosenWord });
+
+  const artistPlayer = room.players.find((p) => p.id === room.currentArtist);
+  io.to(roomId).emit("chat_message", {
+    sender: "System",
+    text: `🎨 Round started! ${artistPlayer?.username || "The artist"} is drawing!`,
+    isCorrect: false,
+  });
+
+  // Handle main round drawing countdown
   activeRooms[`interval_${roomId}`] = setInterval(() => {
     const activeRoom = activeRooms[roomId] as RoomState;
     if (!activeRoom) {
@@ -140,7 +189,6 @@ io.on("connection", (socket) => {
     }
   });
 
-  // Updated handler: Expects avatar values from the form creator
   socket.on(
     "create_room",
     ({
@@ -158,18 +206,18 @@ io.on("connection", (socket) => {
         hostId: socket.id,
         currentArtist: null,
         currentWord: "",
-        timeLeft: 90,
+        timeLeft: 15,
         roundDuration: 90,
         gameStarted: false,
         artistIndex: -1,
         currentRound: 0,
         totalRounds: 3,
         correctGuessers: [],
+        phase: "selecting",
       };
 
       const room = activeRooms[roomId] as RoomState;
 
-      // Save the player object including structural default fallbacks
       room.players.push({
         id: socket.id,
         username,
@@ -191,7 +239,6 @@ io.on("connection", (socket) => {
     },
   );
 
-  // Updated handler: Expects avatar data payload from the arriving client
   socket.on(
     "join_room",
     ({
@@ -205,7 +252,6 @@ io.on("connection", (socket) => {
     }) => {
       const room = activeRooms[roomId] as RoomState | undefined;
 
-      // If room doesn't exist, notify the client instead of creating one
       if (!room) {
         socket.emit("join_failed", { reason: "Invalid Room ID" });
         return;
@@ -225,10 +271,7 @@ io.on("connection", (socket) => {
       }
 
       console.log(`👤 ${username} joined room: ${roomId}`);
-
-      // Acknowledge successful join to the joining socket
       socket.emit("join_success", { roomId });
-
       io.to(roomId).emit("room_state_update", room);
 
       io.to(roomId).emit("chat_message", {
@@ -239,20 +282,17 @@ io.on("connection", (socket) => {
     },
   );
 
-  // Event: Host changes game configuration duration parameters mid-lobby
   socket.on(
     "update_settings",
     ({ roomId, roundDuration }: { roomId: string; roundDuration: number }) => {
       const room = activeRooms[roomId] as RoomState;
       if (room && room.hostId === socket.id && !room.gameStarted) {
         room.roundDuration = roundDuration;
-        room.timeLeft = roundDuration;
         io.to(roomId).emit("room_state_update", room);
       }
     },
   );
 
-  // Event: Host fires explicit manual start signal trigger button
   socket.on("start_game_request", ({ roomId }: { roomId: string }) => {
     const room = activeRooms[roomId] as RoomState;
     if (room && room.hostId === socket.id && !room.gameStarted) {
@@ -261,14 +301,18 @@ io.on("connection", (socket) => {
     }
   });
 
-  // Event: Artist selects a word for the drawing round
   socket.on(
     "word_selected",
     ({ roomId, word }: { roomId: string; word: string }) => {
       const room = activeRooms[roomId] as RoomState;
-      if (room && room.currentArtist === socket.id && room.gameStarted) {
-        room.currentWord = word;
-        io.to(roomId).emit("word_selection_confirmed", { word });
+      // Accept incoming selections exclusively during the selection phase
+      if (
+        room &&
+        room.currentArtist === socket.id &&
+        room.gameStarted &&
+        room.phase === "selecting"
+      ) {
+        startDrawingRound(roomId, word);
       }
     },
   );
@@ -291,7 +335,7 @@ io.on("connection", (socket) => {
       const secretWord = room.currentWord.toLowerCase();
       const isArtist = room.currentArtist === socket.id;
 
-      if (isArtist && cleanedGuess === secretWord) {
+      if (isArtist && room.phase === "drawing" && cleanedGuess === secretWord) {
         socket.emit("chat_message", {
           sender: "System",
           text: "You cannot guess your own secret word!",
@@ -302,12 +346,16 @@ io.on("connection", (socket) => {
 
       const hasAlreadyGuessed = room.correctGuessers.includes(socket.id);
 
-      if (room.gameStarted && cleanedGuess === secretWord) {
+      // Only evaluate valid answers during the active drawing phase
+      if (
+        room.gameStarted &&
+        room.phase === "drawing" &&
+        cleanedGuess === secretWord
+      ) {
         if (hasAlreadyGuessed) return;
 
         room.correctGuessers.push(socket.id);
-        const playerIndex = room.players.findIndex((p) => p.id === socket.id);
-        const player = room.players[playerIndex];
+        const player = room.players.find((p) => p.id === socket.id);
         if (player) {
           player.score += Math.max(20, room.timeLeft * 2);
         }
@@ -344,7 +392,8 @@ io.on("connection", (socket) => {
     console.log(`❌ User disconnected: ${socket.id}`);
 
     for (const roomId in activeRooms) {
-      if (roomId.startsWith("interval_")) continue;
+      if (roomId.startsWith("interval_") || roomId.startsWith("selection_"))
+        continue;
 
       const room = activeRooms[roomId] as RoomState;
       if (!room) continue;
@@ -364,7 +413,6 @@ io.on("connection", (socket) => {
         (id) => id !== socket.id,
       );
 
-      // If the host leaves, pass the host crown responsibilities to the next player
       if (room.hostId === socket.id && room.players.length > 0) {
         room.hostId = room.players[0]!.id;
 
@@ -378,10 +426,12 @@ io.on("connection", (socket) => {
       io.to(roomId).emit("room_state_update", room);
 
       if (room.players.length === 0) {
-        if (activeRooms[`interval_${roomId}`]) {
+        if (activeRooms[`interval_${roomId}`])
           clearInterval(activeRooms[`interval_${roomId}`]);
-          delete activeRooms[`interval_${roomId}`];
-        }
+        if (activeRooms[`selection_${roomId}`])
+          clearInterval(activeRooms[`selection_${roomId}`]);
+        delete activeRooms[`interval_${roomId}`];
+        delete activeRooms[`selection_${roomId}`];
         delete activeRooms[roomId];
       } else if (room.gameStarted && room.currentArtist === socket.id) {
         io.to(roomId).emit("chat_message", {

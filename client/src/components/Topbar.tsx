@@ -10,18 +10,25 @@ interface TopBarProps {
 
 export default function TopBar({ roomState, timer }: TopBarProps) {
   const currentRound = roomState.currentRound || 1;
-  const totalRounds = roomState.totalRounds || 4; // Use state if dynamic, or fallback to 4
-  const status = roomState.gameStarted
-    ? roomState.currentArtist
-      ? "DRAWING"
-      : "CHOOSING"
-    : "WAITING";
+  const totalRounds = roomState.totalRounds || 3; 
+
+  // Determine current game status using backend phase states
+  let statusText = "WAITING";
+  if (roomState.gameStarted) {
+    if (roomState.phase === "selecting") {
+      statusText = "CHOOSING WORD...";
+    } else if (roomState.phase === "drawing") {
+      statusText = roomState.currentWord 
+        ? `WORD: ${roomState.currentWord.toUpperCase()}` 
+        : "DRAWING...";
+    }
+  }
 
   return (
     <div className="topbar">
       <div className="timer-round">
         <div className="timer">
-          <img src={Clock} alt="Player Gif" width={70} />
+          <img src={Clock} alt="Clock Icon" width={70} />
           <span className="time">{timer}</span>
         </div>
         <div className="round">
@@ -31,10 +38,12 @@ export default function TopBar({ roomState, timer }: TopBarProps) {
         </div>
       </div>
 
-      <div className="word-area">{status}</div>
+      <div className="word-area" style={{ fontWeight: "bold", fontSize: "20px" }}>
+        {statusText}
+      </div>
 
       <div className="setting-btn">
-        <img src={Setting} alt="Player Gif" width={50} />
+        <img src={Setting} alt="Setting Icon" width={50} />
       </div>
     </div>
   );

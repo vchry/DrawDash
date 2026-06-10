@@ -52,6 +52,8 @@ export default function Chat({ socket, roomId, username }: ChatProps) {
           if (isSystem) {
             if (msg.isCorrect) {
               classModifier = " msg-correct";
+            } else if (msg.text.includes("Round started!") || msg.text.includes("is choosing a word!")) {
+              classModifier = " msg-started"; // Matches your new round start phase updates
             } else if (msg.text.includes("is drawing now")) {
               classModifier = " msg-drawing";
             } else if (msg.text.includes("joined the room")) {
