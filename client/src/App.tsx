@@ -98,10 +98,7 @@ function App() {
 
     const currentArtistId = roomState.currentArtist;
 
-    if (
-      currentArtistId &&
-      currentArtistId !== previousArtistRef.current
-    ) {
+    if (currentArtistId && currentArtistId !== previousArtistRef.current) {
       previousArtistRef.current = currentArtistId;
       setWordOptions(getRandomWordsFromAll(3));
       setShowPhaseSequence(true);
@@ -145,10 +142,13 @@ function App() {
     socket.emit("start_game_request", { roomId });
   }, [roomId]);
 
-  const handleWordSelected = useCallback((selectedWord: string) => {
-    socket.emit("word_selected", { roomId, word: selectedWord });
-    setWordOptions([]);
-  }, [roomId]);
+  const handleWordSelected = useCallback(
+    (selectedWord: string) => {
+      socket.emit("word_selected", { roomId, word: selectedWord });
+      setWordOptions([]);
+    },
+    [roomId],
+  );
 
   const handlePhaseSequenceComplete = useCallback(() => {
     setShowPhaseSequence(false);
@@ -276,7 +276,7 @@ function App() {
               />
             </div>
             {/* Middle section Dynamic */}
-            <div className="setting-div">
+            <div className="middle-section">
               {showPhaseSequence && roomState && currentPlayer ? (
                 <GamePhaseSequence
                   currentPlayer={currentPlayer}
@@ -324,6 +324,54 @@ function App() {
                 </div>
               )}
             </div>
+            {/* <div className="setting-div">
+              {showPhaseSequence && roomState && currentPlayer ? (
+                <GamePhaseSequence
+                  currentPlayer={currentPlayer}
+                  currentRound={currentRound}
+                  totalRounds={totalRounds}
+                  wordOptions={wordOptions}
+                  onWordSelected={handleWordSelected}
+                  onSequenceComplete={handlePhaseSequenceComplete}
+                  isArtist={isArtist}
+                />
+              ) : !roomState.gameStarted ? (
+                <GameSetting
+                  roomId={roomId}
+                  roomState={roomState}
+                  isHost={isHost}
+                  onDurationChange={handleDurationChange}
+                  onStartGame={handleStartGame}
+                />
+              ) : (
+                <div
+                  className={`canvas-wrapper ${!isArtist ? "canvas-disabled" : ""}`}
+                >
+                  {!isArtist && (
+                    <div
+                      className="canvas-locked-notice"
+                      style={{
+                        background: "#fff3cd",
+                        color: "#856404",
+                        padding: "0.5rem 1rem",
+                        borderRadius: "6px",
+                        border: "1px solid #ffeeba",
+                        fontWeight: "bold",
+                        marginBottom: "0.75rem",
+                        fontSize: "0.9rem",
+                        textAlign: "center",
+                        width: "100%",
+                        boxSizing: "border-box",
+                      }}
+                    >
+                      🔒 Canvas Locked: You are guessing! Use chat panel to
+                      input predictions.
+                    </div>
+                  )}
+                  <Canvas socket={socket} roomId={roomId} isArtist={isArtist} />
+                </div>
+              )}
+            </div> */}
 
             {/* right column */}
             <div style={{ width: "280px", flexShrink: 0 }}>

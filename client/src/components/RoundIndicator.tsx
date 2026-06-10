@@ -27,10 +27,9 @@ export default function RoundIndicator({
   }, [duration, onComplete]);
 
   return (
-    <div className={`round-indicator ${isExiting ? "fade-out" : "fade-in"}`}>
+    <div className={`round-indicator ${isExiting ? "slide-out" : "slide-in"}`}>
       <div className="round-content">
         <h1>Round {currentRound}</h1>
-        <p>of {totalRounds}</p>
       </div>
     </div>
   );

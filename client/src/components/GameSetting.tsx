@@ -32,9 +32,8 @@ export default function PregameLobby({
   };
 
   return (
-    <div>
+    <div className="setting-component">
       {/* MIDDLE COLUMN: Settings */}
-      <div className="settings-column">
         <div className="settings-list">
           <div className="setting-row">
             <label>
@@ -141,7 +140,6 @@ export default function PregameLobby({
             {copied ? "📋 Copied!" : `Room ID: ${roomId}`}
           </button>
         </div>
-      </div>
     </div>
 
     // <div className="chat-column">

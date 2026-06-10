@@ -418,7 +418,15 @@
 }
 
 /* Middle Column: Settings */
-.settings-column {
+.setting-component {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  flex-grow: 1;
+}
+
+.middle-section {
   flex-grow: 1;
   background-color: #353b50;
   border-radius: 2px;
@@ -719,67 +727,121 @@
 } */
 
 /* ===== GAME PHASE SEQUENCE STYLES ===== */
-
 .game-phase-sequence {
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   border-radius: 12px;
+  position: relative; /* Crucial: Keeps the absolute positioned indicator contained inside this div */
+  overflow: hidden; /* Hides the indicator when it slides above the border */
 }
 
 /* Round Indicator Styles */
 .round-indicator {
-  text-align: center;
-  color: #333;
-  animation: fadeIn 0.5s ease-in-out;
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: white;
+
+  /* Animation Defaults */
+  animation-duration: 0.5s;
+  animation-fill-mode: forwards; /* Keeps the element at its ending position after animating */
 }
 
-.round-indicator.fade-out {
-  animation: fadeOut 0.5s ease-in-out forwards;
+/* Class applied when component enters */
+.round-indicator.slide-in {
+  animation-name: slideFromTop;
+  animation-timing-function: cubic-bezier(
+    0.175,
+    0.885,
+    0.32,
+    1.1
+  ); /* Smooth bounce effect */
+}
+
+/* Class applied when duration ends */
+.round-indicator.slide-out {
+  animation-name: slideToTop;
+  animation-timing-function: cubic-bezier(0.6, -0.28, 0.735, 0.045);
 }
 
 .round-content {
-  font-size: 3rem;
+  font-size: 2rem;
   font-weight: bold;
   font-family: "Varela Round", sans-serif;
+  text-align: center;
 }
 
 .round-content h1 {
   margin: 0;
-  font-size: 4rem;
+  font-size: 3rem;
   letter-spacing: 2px;
-  color: #2c3e50;
+  color: white;
 }
 
-.round-content p {
-  margin: 10px 0 0 0;
-  font-size: 1.5rem;
-  opacity: 0.8;
-  color: #34495e;
+/* --- KEYFRAMES --- */
+
+@keyframes slideFromTop {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideToTop {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
 }
 
 /* Player Turning Styles */
+/* Player Turning Styles */
 .player-turning {
-  text-align: center;
-  color: #333;
-  animation: fadeIn 0.5s ease-in-out;
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+
+  /* Animation Defaults */
+  animation-duration: 0.5s;
+  animation-fill-mode: forwards;
 }
 
-.player-turning.fade-out {
-  animation: fadeOut 0.5s ease-in-out forwards;
+/* Class applied when component enters */
+.player-turning.slide-in {
+  animation-name: slideFromTop;
+  animation-timing-function: cubic-bezier(
+    0.175,
+    0.885,
+    0.32,
+    1.1
+  ); /* Match your Round indicator easing */
+}
+
+/* Class applied when duration ends */
+.player-turning.slide-out {
+  animation-name: slideToTop;
+  animation-timing-function: cubic-bezier(0.6, -0.28, 0.735, 0.045);
 }
 
 .player-turning-content {
@@ -787,169 +849,132 @@
   flex-direction: column;
   align-items: center;
   gap: 20px;
+  text-align: center;
+}
+
+.player-turning-content h2 {
+  margin: 0;
+  font-size: 2.2rem;
+  font-family: "Varela Round", sans-serif;
+  font-weight: bold;
+  color: white; /* Clean white color to match screenshot */
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .player-avatar-large {
   width: 150px;
   height: 150px;
   position: relative;
-  background-color: rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 3px solid rgba(52, 73, 94, 0.3);
+  /* Optional: keeping backgrounds clear if you just want the direct avatar like the screenshot */
 }
 
-.player-avatar-large .layer {
+.player-avatar-large .avatar {
   position: absolute;
   width: 100px;
   height: 100px;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-size: 800px 300px;
-  background-repeat: no-repeat;
 }
 
-.player-turning-content h2 {
-  margin: 0;
-  font-size: 2rem;
-  font-family: "Varela Round", sans-serif;
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-.player-turning-content p {
-  margin: 0;
-  font-size: 1.2rem;
-  opacity: 0.8;
-  color: #34495e;
-}
+/* Note: Uses the exact same slide keyframes defined in your global layout stylesheet */
 
 /* Word Options Styles */
-.word-options {
-  background-color: rgba(255, 255, 255, 0.95);
-  border-radius: 12px;
-  padding: 30px;
+/* Base Shared Sliding Canvas Context */
+.word-options,
+.word-options-waiting {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  animation: fadeIn 0.5s ease-in-out;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  overflow-y: auto;
+
+  /* Animation Layout Rules */
+  animation-duration: 0.5s;
+  animation-fill-mode: forwards;
 }
 
-.word-options.fade-out {
-  animation: fadeOut 0.5s ease-in-out forwards;
+/* Slide Triggers */
+.word-options.slide-in,
+.word-options-waiting.slide-in {
+  animation-name: slideFromTop;
+  animation-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.1);
 }
 
-.word-options-waiting {
+.word-options.slide-out,
+.word-options-waiting.slide-out {
+  animation-name: slideToTop;
+  animation-timing-function: cubic-bezier(0.6, -0.28, 0.735, 0.045);
+}
+
+/* Content Alignments matching your clean screenshot design */
+.word-options-content {
+  text-align: center;
   width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  border-radius: 12px;
+}
+
+.word-options-content h2,
+.waiting-message {
+  margin: 0 0 30px 0;
+  font-size: 2.5rem;
+  color: white;
+  font-family: "Varela Round", sans-serif;
+  font-weight: bold;
+}
+
+/* Horizontal alignment setup from image */
+.word-buttons-container {
   display: flex;
-  align-items: center;
+  flex-direction: row; /* Arranged side by side */
   justify-content: center;
-  animation: fadeIn 0.5s ease-in-out;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap; /* Prevents overflow clipping on mobile */
+  padding: 0 20px;
+}
+
+/* White outlined box tags matching screenshot */
+.word-button {
+  padding: 7px 18px;
+  font-size: 1.8rem;
+  border: 3px solid white; /* White border stays constant */
+  background-color: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: "Varela Round", sans-serif;
+  font-weight: bold;
+  color: white;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+/* Hover State */
+.word-button:hover:not(:disabled) {
+  background-color: white; /* Background turns white */
+  color: #353b50; /* Text turns into your background color */
+  /* No transform: scale here so the size doesn't wiggle */
+}
+
+/* Selected / Clicked State (No change from hover) */
+.word-button.selected {
+  background-color: white;
+  color: #353b50;
+}
+
+.word-button:disabled {
+  cursor: not-allowed;
 }
 
 .waiting-content {
   text-align: center;
-  color: #333;
-}
-
-.waiting-content h2 {
-  margin: 0 0 20px 0;
-  font-size: 2rem;
-  font-family: "Varela Round", sans-serif;
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-.waiting-message {
-  margin: 0 0 20px 0;
-  font-size: 1.5rem;
-  color: #34495e;
-  opacity: 0.8;
-}
-
-.waiting-timer {
-  font-size: 1.2rem;
-  color: #7f8c8d;
-  font-weight: 600;
-}
-
-.word-options-content {
-  width: 100%;
-  max-width: 500px;
-}
-
-.word-options-content h2 {
-  margin: 0 0 20px 0;
-  font-size: 1.8rem;
-  color: #333;
-  font-family: "Varela Round", sans-serif;
-  font-weight: bold;
-  text-align: center;
-}
-
-.word-buttons-container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.word-button {
-  padding: 12px 20px;
-  font-size: 1.1rem;
-  border: 2px solid #ddd;
-  background-color: white;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: "Varela Round", sans-serif;
-  font-weight: 600;
-  color: #333;
-}
-
-.word-button:hover {
-  border-color: #4a90e2;
-  background-color: #f0f5ff;
-  transform: translateY(-2px);
-}
-
-.word-button.selected {
-  background-color: #4a90e2;
-  color: white;
-  border-color: #4a90e2;
-  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
-}
-
-.choice-timer {
-  text-align: center;
-  font-size: 1rem;
-  color: #666;
-  margin-bottom: 15px;
-  font-family: "Varela Round", sans-serif;
-}
-
-/* Fade animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
 }
 
 @keyframes fadeOut {
