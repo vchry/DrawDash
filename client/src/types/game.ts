@@ -21,4 +21,7 @@ export interface RoomState {
 
   wordChoices: string[];
   waitingForWordSelection: boolean;
+  currentRound?: number;
+  totalRounds?: number;
+  showPhaseSequence?: boolean;
 }

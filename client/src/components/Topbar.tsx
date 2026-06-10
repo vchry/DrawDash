@@ -1,4 +1,3 @@
-import React from "react";
 import type { RoomState } from "../types/game";
 
 import Clock from "../assets/clock.gif";

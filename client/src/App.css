@@ -49,6 +49,7 @@
   margin-bottom: 15px;
   /* padding-left: 120px; */
 }
+
 /* --- LOGO & AVATARS --- */
 .logo {
   width: 35vw;
@@ -90,12 +91,15 @@
 .body {
   z-index: 1;
 }
+
 .eyes {
   z-index: 2;
 }
+
 .mouth {
   z-index: 3;
 }
+
 .owner {
   z-index: 4;
 }
@@ -336,6 +340,7 @@
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -563,7 +568,8 @@
 
 .timer-round {
   display: flex;
-  align-items: center; /* vertically center clock and text */
+  align-items: center;
+  /* vertically center clock and text */
   gap: 12px;
 }
 
@@ -592,7 +598,8 @@
 /* Round text */
 .round {
   display: flex;
-  align-items: center; /* vertical centering */
+  align-items: center;
+  /* vertical centering */
   height: 70px;
   padding-top: 5px;
 }
@@ -634,7 +641,8 @@
   flex-direction: column;
   width: 280px;
   height: 465px;
-  border: 4px solid #ececec; /* Skribbl container outer frame */
+  border: 4px solid #ececec;
+  /* Skribbl container outer frame */
   border-radius: 4px;
   background: #fff;
   font-family: "Varela Round", sans-serif;
@@ -643,7 +651,8 @@
 
 .chat-history {
   flex: 1;
-  padding: 2px 0; /* Tight spacing like original */
+  padding: 2px 0;
+  /* Tight spacing like original */
   overflow-y: scroll;
   display: flex;
   flex-direction: column;
@@ -657,9 +666,11 @@
   font-size: 15px;
   line-height: 1.3;
 }
+
 .chat-message-row:nth-child(odd) {
   background-color: #f4f4f4;
 }
+
 .chat-message-row:nth-child(even) {
   background-color: #ffffff;
 }
@@ -670,16 +681,19 @@
   color: #3b5998;
   font-weight: bold;
 }
+
 .chat-message-row.msg-correct {
   background-color: #d4f8cb !important;
   color: #4cae4c;
   font-weight: bold;
 }
+
 .chat-message-row.msg-close {
   background-color: #fff9e6 !important;
   color: #cca300;
   font-weight: bold;
 }
+
 .chat-message-row.msg-room-alert {
   background-color: #fff2e6 !important;
   color: #ff8800;
@@ -688,7 +702,8 @@
 
 .chat-sender-name {
   font-weight: bold;
-  color: #000000; /* Dark name headers as shown in screenshot */
+  color: #000000;
+  /* Dark name headers as shown in screenshot */
 }
 
 /* Input system formatting */
@@ -697,10 +712,257 @@
   background: white;
   border-top: 2px solid #ececec;
 }
+
 /* .chat-form {
   display: flex;
   background-color: #fff;
 } */
+
+/* ===== GAME PHASE SEQUENCE STYLES ===== */
+
+.game-phase-sequence {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 12px;
+}
+
+/* Round Indicator Styles */
+.round-indicator {
+  text-align: center;
+  color: #333;
+  animation: fadeIn 0.5s ease-in-out;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.round-indicator.fade-out {
+  animation: fadeOut 0.5s ease-in-out forwards;
+}
+
+.round-content {
+  font-size: 3rem;
+  font-weight: bold;
+  font-family: "Varela Round", sans-serif;
+}
+
+.round-content h1 {
+  margin: 0;
+  font-size: 4rem;
+  letter-spacing: 2px;
+  color: #2c3e50;
+}
+
+.round-content p {
+  margin: 10px 0 0 0;
+  font-size: 1.5rem;
+  opacity: 0.8;
+  color: #34495e;
+}
+
+/* Player Turning Styles */
+.player-turning {
+  text-align: center;
+  color: #333;
+  animation: fadeIn 0.5s ease-in-out;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.player-turning.fade-out {
+  animation: fadeOut 0.5s ease-in-out forwards;
+}
+
+.player-turning-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.player-avatar-large {
+  width: 150px;
+  height: 150px;
+  position: relative;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid rgba(52, 73, 94, 0.3);
+}
+
+.player-avatar-large .layer {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-size: 800px 300px;
+  background-repeat: no-repeat;
+}
+
+.player-turning-content h2 {
+  margin: 0;
+  font-size: 2rem;
+  font-family: "Varela Round", sans-serif;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.player-turning-content p {
+  margin: 0;
+  font-size: 1.2rem;
+  opacity: 0.8;
+  color: #34495e;
+}
+
+/* Word Options Styles */
+.word-options {
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 30px;
+  width: 100%;
+  height: 100%;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.5s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+}
+
+.word-options.fade-out {
+  animation: fadeOut 0.5s ease-in-out forwards;
+}
+
+.word-options-waiting {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.waiting-content {
+  text-align: center;
+  color: #333;
+}
+
+.waiting-content h2 {
+  margin: 0 0 20px 0;
+  font-size: 2rem;
+  font-family: "Varela Round", sans-serif;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.waiting-message {
+  margin: 0 0 20px 0;
+  font-size: 1.5rem;
+  color: #34495e;
+  opacity: 0.8;
+}
+
+.waiting-timer {
+  font-size: 1.2rem;
+  color: #7f8c8d;
+  font-weight: 600;
+}
+
+.word-options-content {
+  width: 100%;
+  max-width: 500px;
+}
+
+.word-options-content h2 {
+  margin: 0 0 20px 0;
+  font-size: 1.8rem;
+  color: #333;
+  font-family: "Varela Round", sans-serif;
+  font-weight: bold;
+  text-align: center;
+}
+
+.word-buttons-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.word-button {
+  padding: 12px 20px;
+  font-size: 1.1rem;
+  border: 2px solid #ddd;
+  background-color: white;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: "Varela Round", sans-serif;
+  font-weight: 600;
+  color: #333;
+}
+
+.word-button:hover {
+  border-color: #4a90e2;
+  background-color: #f0f5ff;
+  transform: translateY(-2px);
+}
+
+.word-button.selected {
+  background-color: #4a90e2;
+  color: white;
+  border-color: #4a90e2;
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+}
+
+.choice-timer {
+  text-align: center;
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 15px;
+  font-family: "Varela Round", sans-serif;
+}
+
+/* Fade animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
 
 .chat-input {
   flex: 1;
@@ -709,6 +971,7 @@
   font-size: 15px;
   outline: none;
 }
+
 /* .chat-input {
   flex: 1;
   padding: 10px 12px;
@@ -745,13 +1008,16 @@
 .chat-history::-webkit-scrollbar {
   width: 10px;
 }
+
 .chat-history::-webkit-scrollbar-track {
   background: #f1f1f1;
 }
+
 .chat-history::-webkit-scrollbar-thumb {
   background: #888;
   border-radius: 4px;
 }
+
 .chat-history::-webkit-scrollbar-thumb:hover {
   background: #555;
 }

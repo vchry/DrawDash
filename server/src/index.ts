@@ -47,8 +47,8 @@ interface RoomState {
   timeLeft: number;
   roundDuration: number; // Customizable turn limit
   gameStarted: boolean; // Gatekeeper flag
-  artistIndex: number;
-  correctGuessers: string[];
+  artistIndex: number; currentRound: number;
+  totalRounds: number; correctGuessers: string[];
 }
 
 interface Rooms {
@@ -80,6 +80,11 @@ const startTurn = (roomId: string) => {
   const nextArtist = room.players[room.artistIndex];
 
   if (!nextArtist) return;
+
+  room.currentRound = room.currentRound + 1;
+  if (room.currentRound > room.totalRounds) {
+    room.currentRound = room.totalRounds;
+  }
 
   room.currentArtist = nextArtist.id;
   room.currentWord = getRandomWord();
@@ -157,6 +162,8 @@ io.on("connection", (socket) => {
         roundDuration: 90,
         gameStarted: false,
         artistIndex: -1,
+        currentRound: 0,
+        totalRounds: 3,
         correctGuessers: [],
       };
 
@@ -254,6 +261,18 @@ io.on("connection", (socket) => {
     }
   });
 
+  // Event: Artist selects a word for the drawing round
+  socket.on(
+    "word_selected",
+    ({ roomId, word }: { roomId: string; word: string }) => {
+      const room = activeRooms[roomId] as RoomState;
+      if (room && room.currentArtist === socket.id && room.gameStarted) {
+        room.currentWord = word;
+        io.to(roomId).emit("word_selection_confirmed", { word });
+      }
+    },
+  );
+
   socket.on(
     "send_message",
     ({
@@ -288,8 +307,9 @@ io.on("connection", (socket) => {
 
         room.correctGuessers.push(socket.id);
         const playerIndex = room.players.findIndex((p) => p.id === socket.id);
-        if (playerIndex !== -1) {
-          room.players[playerIndex].score += Math.max(20, room.timeLeft * 2);
+        const player = room.players[playerIndex];
+        if (player) {
+          player.score += Math.max(20, room.timeLeft * 2);
         }
 
         io.to(roomId).emit("chat_message", {

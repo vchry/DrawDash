@@ -1,21 +1,19 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { io, Socket } from "socket.io-client";
 import type { Player, RoomState } from "./types/game";
 
 // Layout subcomponents
 import LobbyForm from "./components/LobbyForm";
-import GameSetting from "./components/GameSetting";
-import ScoreBoard from "./components/Scoreboard";
+import PregameLobby from "./components/PregameLobby";
+import TopBar from "./components/TopBar";
+import Scoreboard from "./components/Scoreboard";
 import Canvas from "./components/Canvas";
 import Chat from "./components/Chat";
-import GamePhaseSequence from "./components/GamePhaseSequence";
 
 import logo from "./assets/logo.gif";
 import avatarSprite from "./assets/avatar-sprites.gif";
 
 import "./App.css";
-import Topbar from "./components/Topbar";
-import { getRandomWordsFromAll } from "./utils/wordUtils";
 
 const socket: Socket = io("http://localhost:3001");
 
@@ -27,15 +25,12 @@ function App() {
   const [roomState, setRoomState] = useState<RoomState | null>(null);
   const [timer, setTimer] = useState(40);
   const [roomError, setRoomError] = useState("");
-  const [wordOptions, setWordOptions] = useState<string[]>([]);
-  const [showPhaseSequence, setShowPhaseSequence] = useState(false);
 
   const [selectedAvatar, setSelectedAvatar] = useState({
     body: 0,
     eyes: 0,
     mouth: 0,
   });
-  const previousArtistRef = React.useRef<string | null>(null);
 
   const onPrevBody = () =>
     setSelectedAvatar((a) => ({ ...a, body: (a.body + 7) % 8 }));
@@ -73,40 +68,12 @@ function App() {
       setRoomId(data.roomId);
     });
 
-    socket.on("word_selection_confirmed", () => {
-      setShowPhaseSequence(false);
-    });
-
     return () => {
       socket.off("room_state_update");
       socket.off("timer_tick");
       socket.off("room_created");
-      socket.off("word_selection_confirmed");
     };
   }, []);
-
-  useEffect(() => {
-    if (!roomState) {
-      return;
-    }
-
-    if (!roomState.gameStarted) {
-      previousArtistRef.current = null;
-      setShowPhaseSequence(false);
-      return;
-    }
-
-    const currentArtistId = roomState.currentArtist;
-
-    if (
-      currentArtistId &&
-      currentArtistId !== previousArtistRef.current
-    ) {
-      previousArtistRef.current = currentArtistId;
-      setWordOptions(getRandomWordsFromAll(3));
-      setShowPhaseSequence(true);
-    }
-  }, [roomState]);
 
   const handleCreateRoom = () => {
     if (!username.trim()) return;
@@ -141,23 +108,12 @@ function App() {
     socket.emit("update_settings", { roomId, roundDuration: value });
   };
 
-  const handleStartGame = useCallback(() => {
+  const handleStartGame = () => {
     socket.emit("start_game_request", { roomId });
-  }, [roomId]);
-
-  const handleWordSelected = useCallback((selectedWord: string) => {
-    socket.emit("word_selected", { roomId, word: selectedWord });
-    setWordOptions([]);
-  }, [roomId]);
-
-  const handlePhaseSequenceComplete = useCallback(() => {
-    setShowPhaseSequence(false);
-  }, []);
+  };
 
   const isHost = roomState?.hostId === socket.id;
   const isArtist = roomState?.currentArtist === socket.id;
-  const currentRound = roomState?.currentRound || 1;
-  const totalRounds = roomState?.totalRounds || 3;
 
   const SPRITE_SIZE = 100;
 
@@ -187,21 +143,27 @@ function App() {
     }));
   });
 
-  const currentPlayer = players.find((p) => p.id === roomState?.currentArtist);
-
   return (
-    <div className="game-container">
+    <div
+      className="game-container"
+      style={{
+        padding: "1rem",
+        boxSizing: "border-box",
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+      }}
+    >
       <div className={isJoined ? "header-left" : "header"}>
         <div className="logo-container">
           <img
             src={logo}
             alt="DrawDash Logo"
-            // This dynamically switches between 'logo' and 'logo-small'
             className={isJoined ? "logo-small" : "logo"}
           />
         </div>
 
-        {/* Conditionally render the 8 avatars ONLY when not joined in a room */}
         {!isJoined && (
           <div className="hero-avatar">
             {avatars.map((avatar, index) => (
@@ -241,6 +203,7 @@ function App() {
           </div>
         )}
       </div>
+
       {!isJoined ? (
         <LobbyForm
           username={username}
@@ -261,34 +224,50 @@ function App() {
           serverError={roomError}
         />
       ) : roomState ? (
-        <div className="game-layout-container">
-          {/* Top bar  */}
-          <Topbar roomState={roomState} timer={timer} />
+        /* Persistent Unification Container Grid Layer */
+        <div
+          className="game-layout-container"
+          style={{
+            width: "100%",
+            maxWidth: "1150px",
+            display: "flex",
+            flexDirection: "column",
+            marginTop: "1rem",
+          }}
+        >
+          {/* 1. Global Interactive Top Counter Row */}
+          <TopBar roomState={roomState} timer={timer} />
 
-          {/* 3 Column layout  */}
-          <div className="game-workspace-columns">
-            {/* left column Score bard */}
-            <div>
-              <ScoreBoard
+          {/* 2. Unified Persistent 3-Column Layout Row */}
+          <div
+            className="game-workspace-columns"
+            style={{
+              display: "flex",
+              gap: "1.25rem",
+              alignItems: "flex-start",
+              width: "100%",
+            }}
+          >
+            {/* Left Column Section: Dynamic Player List Scoreboard Cards */}
+            <div style={{ width: "260px", flexShrink: 0 }}>
+              <Scoreboard
                 players={players}
                 roomState={roomState}
                 currentUserId={socket.id}
               />
             </div>
-            {/* Middle section Dynamic */}
-            <div className="setting-div">
-              {showPhaseSequence && roomState && currentPlayer ? (
-                <GamePhaseSequence
-                  currentPlayer={currentPlayer}
-                  currentRound={currentRound}
-                  totalRounds={totalRounds}
-                  wordOptions={wordOptions}
-                  onWordSelected={handleWordSelected}
-                  onSequenceComplete={handlePhaseSequenceComplete}
-                  isArtist={isArtist}
-                />
-              ) : !roomState.gameStarted ? (
-                <GameSetting
+
+            {/* Middle Column Section: Dynamic Content Toggle Panel */}
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                justifyContent: "center",
+                minWidth: "0",
+              }}
+            >
+              {!roomState.gameStarted ? (
+                <PregameLobby
                   roomId={roomId}
                   roomState={roomState}
                   isHost={isHost}
@@ -298,6 +277,12 @@ function App() {
               ) : (
                 <div
                   className={`canvas-wrapper ${!isArtist ? "canvas-disabled" : ""}`}
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                  }}
                 >
                   {!isArtist && (
                     <div
@@ -325,7 +310,7 @@ function App() {
               )}
             </div>
 
-            {/* right column */}
+            {/* Right Column Section: Shared Chat Messaging Engine */}
             <div style={{ width: "280px", flexShrink: 0 }}>
               <Chat socket={socket} roomId={roomId} username={username} />
             </div>

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import type { Player, RoomState } from "../types/game";
-import Avatar from "./Avatar"; // Adjust the import path as necessary
+import type { RoomState } from "../types/game";
 
 import Players from "../assets/person.gif";
 import Drawtime from "../assets/drawtime.gif";
@@ -11,7 +10,6 @@ import WordCount from "../assets/word count.gif";
 interface PregameLobbyProps {
   roomId: string;
   roomState: RoomState;
-  players: Player[];
   isHost: boolean;
   onDurationChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   onStartGame: () => void;
@@ -20,7 +18,6 @@ interface PregameLobbyProps {
 export default function PregameLobby({
   roomId,
   roomState,
-  players,
   isHost,
   onDurationChange,
   onStartGame,

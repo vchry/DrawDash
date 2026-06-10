@@ -25,18 +25,6 @@ export default function Scoreboard({
           const isCurrentArtist = player.id === roomState?.currentArtist;
           const isCurrentPlayerHost = player.id === roomState?.hostId;
 
-          // Compute custom visual boundaries per assignment context
-          let borderStyle = "2px solid #333";
-          let backgroundStyle = "#fff";
-
-          if (hasGuessedCorrectly) {
-            borderStyle = "2px solid #28a745";
-            backgroundStyle = "#e2f0d9";
-          } else if (isCurrentArtist) {
-            borderStyle = "2px solid #ffc107";
-            backgroundStyle = "#fffbe6";
-          }
-
           return (
             <li
               key={player.id}
