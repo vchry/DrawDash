@@ -231,7 +231,7 @@ function App() {
               />
             </div>
             {/* Middle section Dynamic */}
-            <div>
+            <div className="setting-div">
               {!roomState.gameStarted ? (
                 <GameSetting
                   roomId={roomId}

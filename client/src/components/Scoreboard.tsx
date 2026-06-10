@@ -18,7 +18,6 @@ export default function Scoreboard({
 
   return (
     <div className="sidebar">
-      <h4>Players:</h4>
       <ul className="player-list">
         {sortedPlayers.map((player, index) => {
           const hasGuessedCorrectly =
@@ -65,14 +64,14 @@ export default function Scoreboard({
                 <span
                   className={`player-name ${player.id === currentUserId ? "bold" : ""} ${isCurrentPlayerHost ? "host-name" : ""}`}
                 >
-                  {isCurrentArtist
+                  {/* {isCurrentArtist
                     ? "🖌️ "
                     : hasGuessedCorrectly
                       ? "✅ "
-                      : "🟢 "}
+                      : "🟢 "} */}
                   {player.username} {player.id === currentUserId ? "(You)" : ""}
                 </span>
-                <span className="player-score">Score: {player.score || 0}</span>
+                <span className="player-score">{player.score || 0} Points</span>
               </div>
               {/* Dynamic Sprite Avatar Component */}
               <div className="player-avatar-container">

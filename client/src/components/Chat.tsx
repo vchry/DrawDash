@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { Socket } from 'socket.io-client';
+import { useState, useEffect, useRef } from "react";
+import { Socket } from "socket.io-client";
 
 interface ChatProps {
   socket: Socket;
@@ -15,53 +15,67 @@ interface Message {
 
 export default function Chat({ socket, roomId, username }: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    socket.on('chat_message', (message: Message) => {
+    socket.on("chat_message", (message: Message) => {
       setMessages((prev) => [...prev, message]);
     });
 
     return () => {
-      socket.off('chat_message');
+      socket.off("chat_message");
     };
   }, [socket]);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
 
-    socket.emit('send_message', { roomId, text: inputValue, username });
-    setInputValue('');
+    socket.emit("send_message", { roomId, text: inputValue, username });
+    setInputValue("");
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', width: '280px', height: '465px', border: '2px solid #333', borderRadius: '8px', background: '#fff' }}>
-      
+    <div className="chat-container">
       {/* Scrollable Message History Area */}
-      <div style={{ flex: 1, padding: '0.75rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+      <div className="chat-history">
         {messages.map((msg, index) => {
-          let bg = 'transparent';
-          let color = '#333';
-          let weight = 'normal';
+          let classModifier = "";
+          const isSystem = msg.sender === "System";
 
-          if (msg.sender === 'System') {
-            weight = 'bold';
-            color = msg.isCorrect ? '#28a745' : '#6c757d'; // Green for win, Grey for normal alerts
-            if (msg.isCorrect) bg = '#e2f0d9';
+          // Assign distinct classes based on the visual layout requirements
+          if (isSystem) {
+            if (msg.isCorrect) {
+              classModifier = " msg-correct";
+            } else if (msg.text.includes("is drawing now")) {
+              classModifier = " msg-drawing";
+            } else if (msg.text.includes("joined the room")) {
+              classModifier = " msg-joined";
+            } else if (msg.text.includes("left the room")) {
+              classModifier = " msg-left";
+            } else if (msg.text.includes("room owner")) {
+              classModifier = " msg-owner";
+            } else if (msg.text.includes("won with a score")) {
+              classModifier = " msg-winner";
+            }
           }
 
           return (
-            <div key={index} style={{ background: bg, padding: '4px 8px', borderRadius: '4px', fontSize: '0.9rem' }}>
-              <span style={{ fontWeight: 'bold', color: msg.sender === 'System' ? color : '#007bff' }}>
-                {msg.sender}:{' '}
-              </span>
-              <span style={{ color, fontWeight: weight }}>{msg.text}</span>
+            <div key={index} className={`chat-message-row${classModifier}`}>
+              {/* System alerts in the screenshots don't show 'System: ', just raw text */}
+              {!isSystem ? (
+                <>
+                  <span className="chat-sender-name">{msg.sender}: </span>
+                  <span>{msg.text}</span>
+                </>
+              ) : (
+                <span>{msg.text}</span>
+              )}
             </div>
           );
         })}
@@ -69,15 +83,15 @@ export default function Chat({ socket, roomId, username }: ChatProps) {
       </div>
 
       {/* Input Message Form */}
-      <form onSubmit={handleSendMessage} style={{ display: 'flex', borderTop: '2px solid #333' }}>
+      <form onSubmit={handleSendMessage} className="chat-form">
         <input
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Type your guess here..."
-          style={{ flex: 1, padding: '0.75rem', border: 'none', outline: 'none', borderRadius: '0 0 0 6px' }}
+          className="chat-input"
         />
-        <button type="submit" style={{ padding: '0.75rem 1rem', background: '#007bff', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 'bold', borderRadius: '0 0 6px 0' }}>
+        <button type="submit" className="chat-submit-btn">
           Send
         </button>
       </form>

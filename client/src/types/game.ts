@@ -2,7 +2,7 @@ export interface Player {
   id: string;
   username: string;
   score: number;
-  
+
   // Avatar customization configuration (0 to 9)
   body?: number;
   eyes?: number;
@@ -18,4 +18,7 @@ export interface RoomState {
   roundDuration: number;
   gameStarted: boolean;
   correctGuessers: string[];
+
+  wordChoices: string[];
+  waitingForWordSelection: boolean;
 }

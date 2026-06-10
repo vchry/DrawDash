@@ -93,7 +93,7 @@ const startTurn = (roomId: string) => {
   io.to(roomId).emit("room_state_update", room);
   io.to(roomId).emit("chat_message", {
     sender: "System",
-    text: `🔄 Round started! ${nextArtist.username} is drawing.`,
+    text: `${nextArtist.username} is drawing now!`,
     isCorrect: false,
   });
 
@@ -136,49 +136,66 @@ io.on("connection", (socket) => {
   });
 
   // Updated handler: Expects avatar values from the form creator
-  socket.on("create_room", ({ username, avatar }: { username: string; avatar?: { body: number; eyes: number; mouth: number } }) => {
-    const roomId = generateRoomId();
-    socket.join(roomId);
-
-    activeRooms[roomId] = {
-      players: [],
-      hostId: socket.id,
-      currentArtist: null,
-      currentWord: "",
-      timeLeft: 90,
-      roundDuration: 90,
-      gameStarted: false,
-      artistIndex: -1,
-      correctGuessers: [],
-    };
-
-    const room = activeRooms[roomId] as RoomState;
-
-    // Save the player object including structural default fallbacks
-    room.players.push({
-      id: socket.id,
+  socket.on(
+    "create_room",
+    ({
       username,
-      score: 0,
-      body: avatar?.body ?? 0,
-      eyes: avatar?.eyes ?? 0,
-      mouth: avatar?.mouth ?? 0
-    });
+      avatar,
+    }: {
+      username: string;
+      avatar?: { body: number; eyes: number; mouth: number };
+    }) => {
+      const roomId = generateRoomId();
+      socket.join(roomId);
 
-    console.log(`🏗️  Room created: ${roomId} by ${username}`);
-    socket.emit("room_created", { roomId });
-    io.to(roomId).emit("room_state_update", room);
+      activeRooms[roomId] = {
+        players: [],
+        hostId: socket.id,
+        currentArtist: null,
+        currentWord: "",
+        timeLeft: 90,
+        roundDuration: 90,
+        gameStarted: false,
+        artistIndex: -1,
+        correctGuessers: [],
+      };
 
-    io.to(roomId).emit("chat_message", {
-      sender: "System",
-      text: `${username} created the room!`,
-      isCorrect: false,
-    });
-  });
+      const room = activeRooms[roomId] as RoomState;
+
+      // Save the player object including structural default fallbacks
+      room.players.push({
+        id: socket.id,
+        username,
+        score: 0,
+        body: avatar?.body ?? 0,
+        eyes: avatar?.eyes ?? 0,
+        mouth: avatar?.mouth ?? 0,
+      });
+
+      console.log(`🏗️  Room created: ${roomId} by ${username}`);
+      socket.emit("room_created", { roomId });
+      io.to(roomId).emit("room_state_update", room);
+
+      io.to(roomId).emit("chat_message", {
+        sender: "System",
+        text: `${username} created the room!`,
+        isCorrect: false,
+      });
+    },
+  );
 
   // Updated handler: Expects avatar data payload from the arriving client
   socket.on(
     "join_room",
-    ({ roomId, username, avatar }: { roomId: string; username: string; avatar?: { body: number; eyes: number; mouth: number } }) => {
+    ({
+      roomId,
+      username,
+      avatar,
+    }: {
+      roomId: string;
+      username: string;
+      avatar?: { body: number; eyes: number; mouth: number };
+    }) => {
       const room = activeRooms[roomId] as RoomState | undefined;
 
       // If room doesn't exist, notify the client instead of creating one
@@ -196,7 +213,7 @@ io.on("connection", (socket) => {
           score: 0,
           body: avatar?.body ?? 0,
           eyes: avatar?.eyes ?? 0,
-          mouth: avatar?.mouth ?? 0
+          mouth: avatar?.mouth ?? 0,
         });
       }
 
@@ -209,7 +226,7 @@ io.on("connection", (socket) => {
 
       io.to(roomId).emit("chat_message", {
         sender: "System",
-        text: `${username} has entered the room!`,
+        text: `${username} joined the room!`,
         isCorrect: false,
       });
     },
@@ -277,7 +294,7 @@ io.on("connection", (socket) => {
 
         io.to(roomId).emit("chat_message", {
           sender: "System",
-          text: `${username} guessed the secret word! 🎉`,
+          text: `${username} guessed the word!`,
           isCorrect: true,
         });
 
@@ -312,6 +329,16 @@ io.on("connection", (socket) => {
       const room = activeRooms[roomId] as RoomState;
       if (!room) continue;
 
+      const leavingPlayer = room.players.find((p) => p.id === socket.id);
+
+      if (leavingPlayer) {
+        io.to(roomId).emit("chat_message", {
+          sender: "System",
+          text: `${leavingPlayer.username} left the room!`,
+          isCorrect: false,
+        });
+      }
+
       room.players = room.players.filter((p) => p.id !== socket.id);
       room.correctGuessers = room.correctGuessers.filter(
         (id) => id !== socket.id,
@@ -320,6 +347,12 @@ io.on("connection", (socket) => {
       // If the host leaves, pass the host crown responsibilities to the next player
       if (room.hostId === socket.id && room.players.length > 0) {
         room.hostId = room.players[0]!.id;
+
+        io.to(roomId).emit("chat_message", {
+          sender: "System",
+          text: `${room.players[0]!.username} is now the room owner!`,
+          isCorrect: false,
+        });
       }
 
       io.to(roomId).emit("room_state_update", room);

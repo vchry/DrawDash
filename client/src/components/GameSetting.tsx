@@ -35,38 +35,6 @@ export default function PregameLobby({
   };
 
   return (
-    // <div className="lobby-wrapper">
-    //   {/* LEFT COLUMN: Players */}
-    //   <div className="players-column">
-    //     {players.map((p, index) => {
-    //       const isCurrentPlayerHost = p.id === roomState.hostId;
-
-    //       return (
-    //         <div key={p.id} className="player-card">
-    //           <div className="player-rank">#{index + 1}</div>
-    //           <div className="player-info">
-    //             <span
-    //               className={`player-name ${isCurrentPlayerHost ? "host-name" : ""}`}
-    //             >
-    //               {p.username} {isCurrentPlayerHost && "(You)"}
-    //             </span>
-    //             <span className="player-points">0 points</span>
-    //           </div>
-
-    //           {/* Dynamic Sprite Avatar Container */}
-    //           <div className="player-avatar-container">
-    //             <Avatar
-    //               body={p.body ?? 0}   // Defaults to 0 if not provided in player object
-    //               eyes={p.eyes ?? 0}   // Defaults to 0 if not provided in player object
-    //               mouth={p.mouth ?? 0} // Defaults to 0 if not provided in player object
-    //               special={isCurrentPlayerHost ? 0 : null} // Gives row 4, col 0 asset to the host
-    //               size={60}            // Resized down slightly to cleanly fit inside a player card list
-    //             />
-    //           </div>
-    //         </div>
-    //       );
-    //     })}
-    //   </div>
     <div>
       {/* MIDDLE COLUMN: Settings */}
       <div className="settings-column">

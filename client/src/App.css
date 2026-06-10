@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Varela+Round&display=swap");
+
 /* --- MAIN WRAPPER --- */
 .game-container {
   min-height: 100vh;
@@ -364,36 +366,50 @@
   border-radius: 2px;
   display: flex;
   align-items: center;
-  padding: 8px;
-  height: 50px;
+  padding: 0px;
+  height: 42px;
+  min-width: 200px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-family: "Varela Round", sans-serif !important;
+  margin-bottom: 7px;
 }
 
 .player-rank {
   font-weight: bold;
   font-size: 14px;
   width: 30px;
+  font-family: "Varela Round", sans-serif !important;
 }
 
 .player-info {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  font-family: "Varela Round", sans-serif !important;
 }
 
 .player-name {
   font-weight: bold;
   font-size: 14px;
   color: #333;
+  font-family: "Varela Round", sans-serif !important;
 }
 
 .host-name {
   color: #4998ff;
+  font-family: "Varela Round", sans-serif !important;
 }
 
 .player-points {
   font-size: 12px;
   color: #666;
+  font-family: "Varela Round", sans-serif !important;
+}
+
+.player-score {
+  font-size: 11px;
+  font-family: "Varela Round", sans-serif !important;
+  font-weight: 500;
 }
 
 /* Middle Column: Settings */
@@ -405,6 +421,10 @@
   flex-direction: column;
   padding: 7px;
   color: white;
+}
+
+.setting-div {
+  flex-grow: 1;
 }
 
 .settings-list {
@@ -592,4 +612,190 @@
   position: absolute;
   left: 50%;
   transform: translatex(-50%);
+}
+
+.game-workspace-columns {
+  display: flex;
+  flex-direction: row;
+  width: calc(100vw - 240px);
+  gap: 7px;
+  margin-top: 7px;
+}
+
+.player-list {
+  margin-block: 0em !important;
+  padding-inline-start: 0px;
+}
+
+/* chat */
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  width: 280px;
+  height: 465px;
+  border: 4px solid #ececec; /* Skribbl container outer frame */
+  border-radius: 4px;
+  background: #fff;
+  font-family: "Varela Round", sans-serif;
+  box-sizing: border-box;
+}
+
+.chat-history {
+  flex: 1;
+  padding: 2px 0; /* Tight spacing like original */
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  font-family: "Varela Round", sans-serif;
+}
+
+/* Alternating background colors for standard rows */
+.chat-message-row {
+  padding: 5px 10px;
+  font-size: 15px;
+  line-height: 1.3;
+}
+.chat-message-row:nth-child(odd) {
+  background-color: #f4f4f4;
+}
+.chat-message-row:nth-child(even) {
+  background-color: #ffffff;
+}
+
+/* Specific theme overrides matching the game state colors */
+.chat-message-row.msg-drawing {
+  background-color: #e8ebf4 !important;
+  color: #3b5998;
+  font-weight: bold;
+}
+.chat-message-row.msg-correct {
+  background-color: #d4f8cb !important;
+  color: #4cae4c;
+  font-weight: bold;
+}
+.chat-message-row.msg-close {
+  background-color: #fff9e6 !important;
+  color: #cca300;
+  font-weight: bold;
+}
+.chat-message-row.msg-room-alert {
+  background-color: #fff2e6 !important;
+  color: #ff8800;
+  font-weight: bold;
+}
+
+.chat-sender-name {
+  font-weight: bold;
+  color: #000000; /* Dark name headers as shown in screenshot */
+}
+
+/* Input system formatting */
+.chat-form {
+  display: flex;
+  background: white;
+  border-top: 2px solid #ececec;
+}
+/* .chat-form {
+  display: flex;
+  background-color: #fff;
+} */
+
+.chat-input {
+  flex: 1;
+  border: none;
+  padding: 10px;
+  font-size: 15px;
+  outline: none;
+}
+/* .chat-input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 2px solid #ececec;
+  border-radius: 4px;
+  outline: none;
+  font-family: "Varela Round", sans-serif;
+  font-size: 15px;
+  color: #555;
+} */
+.chat-input::placeholder {
+  color: #b3b3b3;
+}
+
+/* Hide button as input spans full width in the original image */
+.chat-submit-btn {
+  padding: 0 16px;
+  border: none;
+  background: #70c94c;
+  color: white;
+  font-family: "Varela Round", sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  border-left: 2px solid #ececec;
+  transition: background 0.15s ease;
+}
+
+.chat-submit-btn:hover {
+  background: #5fb13f;
+}
+
+/* Scrollbar styling matching the screenshots */
+.chat-history::-webkit-scrollbar {
+  width: 10px;
+}
+.chat-history::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+.chat-history::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+.chat-history::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Default row */
+.chat-message-row {
+  padding: 5px 10px;
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+/* USER JOINED */
+.chat-message-row.msg-joined {
+  color: #28a745;
+  font-weight: bold;
+}
+
+/* USER LEFT */
+.chat-message-row.msg-left {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+/* ROOM OWNER */
+.chat-message-row.msg-owner {
+  color: #ff8800;
+  font-weight: bold;
+}
+
+/* DRAWING */
+.chat-message-row.msg-drawing {
+  color: #2f80ed;
+  font-weight: bold;
+}
+
+/* GUESSED WORD */
+.chat-message-row.msg-correct {
+  background: #d4f8cb !important;
+  color: #28a745;
+  font-weight: bold;
+}
+
+/* WINNER */
+.chat-message-row.msg-winner {
+  color: #ff8800;
+  font-weight: bold;
 }
