@@ -16,6 +16,8 @@ import avatarSprite from "./assets/avatar-sprites.gif";
 import "./App.css";
 import Topbar from "./components/Topbar";
 import { getRandomWordsFromAll } from "./utils/wordUtils";
+import Toolbar from "./components/Toolbar";
+import Footer from "./components/Footer";
 
 const socket: Socket = io("http://localhost:3001");
 
@@ -30,12 +32,26 @@ function App() {
   const [wordOptions, setWordOptions] = useState<string[]>([]);
   const [showPhaseSequence, setShowPhaseSequence] = useState(false);
 
+  // Shared Toolbar / Canvas States
+  const [color, setColor] = useState("#000000");
+  const [width, setWidth] = useState(5);
+  const [activeTool, setActiveTool] = useState<"brush" | "fill">("brush");
+
   const [selectedAvatar, setSelectedAvatar] = useState({
     body: 0,
     eyes: 0,
     mouth: 0,
   });
   const previousArtistRef = React.useRef<string | null>(null);
+
+  // Custom events to trigger internal canvas methods from the toolbar
+  const triggerUndo = () => {
+    window.dispatchEvent(new CustomEvent("canvas-undo"));
+  };
+
+  const triggerClear = () => {
+    window.dispatchEvent(new CustomEvent("canvas-clear"));
+  };
 
   const onPrevBody = () =>
     setSelectedAvatar((a) => ({ ...a, body: (a.body + 7) % 8 }));
@@ -98,11 +114,9 @@ function App() {
 
     const currentArtistId = roomState.currentArtist;
 
-    // Trigger overlay setup when backend state switches into selecting phase
     if (roomState.phase === "selecting") {
       if (currentArtistId && currentArtistId !== previousArtistRef.current) {
         previousArtistRef.current = currentArtistId;
-        // Generate options locally if this socket client is the designated artist
         if (currentArtistId === socket.id) {
           setWordOptions(getRandomWordsFromAll(3));
         } else {
@@ -281,7 +295,9 @@ function App() {
               />
             </div>
 
-            <div className="middle-section">
+            <div
+              className={`middle-section ${roomState.gameStarted && !showPhaseSequence ? "canvas-mode" : ""}`}
+            >
               {showPhaseSequence && roomState && currentPlayer ? (
                 <GamePhaseSequence
                   currentPlayer={currentPlayer}
@@ -304,28 +320,28 @@ function App() {
                 <div
                   className={`canvas-wrapper ${!isArtist ? "canvas-disabled" : ""}`}
                 >
-                  {!isArtist && (
-                    <div
-                      className="canvas-locked-notice"
-                      style={{
-                        background: "#fff3cd",
-                        color: "#856404",
-                        padding: "0.5rem 1rem",
-                        borderRadius: "6px",
-                        border: "1px solid #ffeeba",
-                        fontWeight: "bold",
-                        marginBottom: "0.75rem",
-                        fontSize: "0.9rem",
-                        textAlign: "center",
-                        width: "100%",
-                        boxSizing: "border-box",
-                      }}
-                    >
-                      🔒 Canvas Locked: You are guessing! Use chat panel to
-                      input predictions.
-                    </div>
+                  <Canvas
+                    socket={socket}
+                    roomId={roomId}
+                    isArtist={isArtist}
+                    color={color}
+                    width={width}
+                    activeTool={activeTool}
+                    setActiveTool={setActiveTool}
+                  />
+                  {isArtist && (
+                    <Toolbar
+                      isArtist={isArtist}
+                      color={color}
+                      setColor={setColor}
+                      width={width}
+                      setWidth={setWidth}
+                      activeTool={activeTool}
+                      setActiveTool={setActiveTool}
+                      onUndo={triggerUndo}
+                      onClear={triggerClear}
+                    />
                   )}
-                  <Canvas socket={socket} roomId={roomId} isArtist={isArtist} />
                 </div>
               )}
             </div>
@@ -336,6 +352,7 @@ function App() {
           </div>
         </div>
       ) : null}
+      {!isJoined && <Footer/>}
     </div>
   );
 }

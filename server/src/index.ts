@@ -182,6 +182,23 @@ io.on("connection", (socket) => {
     socket.to(roomId).emit("draw_received", data);
   });
 
+  socket.on(
+    "fill",
+    ({
+      roomId,
+      x,
+      y,
+      color,
+    }: {
+      roomId: string;
+      x: number;
+      y: number;
+      color: string;
+    }) => {
+      socket.to(roomId).emit("fill_received", { x, y, color });
+    },
+  );
+
   socket.on("clear_canvas_request", ({ roomId }: { roomId: string }) => {
     const room = activeRooms[roomId];
     if (room && room.currentArtist === socket.id) {

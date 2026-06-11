@@ -434,6 +434,13 @@
   flex-direction: column;
   padding: 7px;
   color: white;
+  height: 580px;
+  box-sizing: border-box; /* Ensures padding adjustments don't alter layout dimensions */
+}
+
+/* This overrides the default padding when the canvas mounts */
+.middle-section.canvas-mode {
+  padding: 0;
 }
 
 .setting-div {
@@ -629,6 +636,10 @@
   transform: translatex(-50%);
 }
 
+.game-layout-container {
+  padding-bottom: 70px;
+}
+
 .game-workspace-columns {
   display: flex;
   flex-direction: row;
@@ -648,8 +659,8 @@
   display: flex;
   flex-direction: column;
   width: 280px;
-  height: 465px;
-  border: 4px solid #ececec;
+  height: 580px;
+  /* border: 4px solid #ececec; */
   /* Skribbl container outer frame */
   border-radius: 4px;
   background: #fff;
@@ -676,7 +687,7 @@
 }
 
 .chat-message-row:nth-child(odd) {
-  background-color: #f4f4f4;
+  background-color: #ECECEC;
 }
 
 .chat-message-row:nth-child(even) {
@@ -716,9 +727,18 @@
 
 /* Input system formatting */
 .chat-form {
+  margin: 3px;
+  border-radius: 3px;
+  border: 1px solid black;
   display: flex;
   background: white;
-  border-top: 2px solid #ececec;
+  /* border-top: 2px solid #ececec; */
+  /* padding: .2em; */
+  height: 35px;
+}
+
+.chat-input{
+  border-radius: 3px;
 }
 
 /* .chat-form {
@@ -1021,7 +1041,8 @@
   font-size: 14px;
   font-weight: bold;
   cursor: pointer;
-  border-left: 2px solid #ececec;
+  border-radius: 2px;
+  /* border-left: 2px solid #ececec; */
   transition: background 0.15s ease;
 }
 
@@ -1031,14 +1052,16 @@
 
 /* Scrollbar styling matching the screenshots */
 .chat-history::-webkit-scrollbar {
-  width: 10px;
+  width:0px;
 }
 
+/* 
 .chat-history::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  display: block;
 }
 
 .chat-history::-webkit-scrollbar-thumb {
+  display: block;
   background: #888;
   border-radius: 4px;
 }
@@ -1046,6 +1069,7 @@
 .chat-history::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+ */
 
 /* Default row */
 .chat-message-row {
@@ -1090,3 +1114,29 @@
   color: #ff8800;
   font-weight: bold;
 }
+
+.foot {
+  width: calc(100% + 240px);
+  margin-top: auto; 
+  background-color: rgba(12, 44, 150, 0.75); 
+  padding: 40px 140px 25px 140px; 
+  clip-path: polygon(0 0, 100% 30%, 100% 100%, 0 100%);
+  box-sizing: border-box;
+  margin-top: 50px;
+}
+
+.foot h4 {
+  color: white;
+  font-weight: 400;
+  margin-bottom: 0;
+}
+
+.foot p {
+  color: #677af9;
+  font-size: small;
+  margin: 0;
+}
+
+/* Footer {
+  margin-top: 50px;
+} */
