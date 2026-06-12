@@ -11,7 +11,15 @@ interface Message {
   sender: string;
   text: string;
   isCorrect?: boolean;
-  type?: "artist-chat" | "is-drawing" | "joined" | "left" | "word-reveal" | "correct-guess" | "winner" | "system";
+  type?:
+    | "artist-chat"
+    | "is-drawing"
+    | "joined"
+    | "left"
+    | "word-reveal"
+    | "correct-guess"
+    | "winner"
+    | "system";
 }
 
 export default function Chat({ socket, roomId, username }: ChatProps) {
@@ -73,16 +81,22 @@ export default function Chat({ socket, roomId, username }: ChatProps) {
 
       {/* Input Message Form */}
       <form onSubmit={handleSendMessage} className="chat-form">
-        <input
-          type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          placeholder="Type your guess here..."
-          className="chat-input"
-        />
-        <button type="submit" className="chat-submit-btn">
-          Send
-        </button>
+        <div className="chat-input-wrapper">
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="Type your guess here..."
+            className="chat-input"
+            maxLength={100}
+          />
+
+          <span className="chat-char-count">{inputValue.length}</span>
+        </div>
+
+  <button type="submit" className="chat-submit-btn">
+    Send
+  </button>
       </form>
     </div>
   );
