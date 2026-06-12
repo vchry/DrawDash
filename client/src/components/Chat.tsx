@@ -11,6 +11,7 @@ interface Message {
   sender: string;
   text: string;
   isCorrect?: boolean;
+  type?: "artist-chat" | "is-drawing" | "joined" | "left" | "word-reveal" | "correct-guess" | "winner" | "system";
 }
 
 export default function Chat({ socket, roomId, username }: ChatProps) {
@@ -48,34 +49,20 @@ export default function Chat({ socket, roomId, username }: ChatProps) {
           let classModifier = "";
           const isSystem = msg.sender === "System";
 
-          // Assign distinct classes based on the visual layout requirements
-          if (isSystem) {
-            if (msg.isCorrect) {
-              classModifier = " msg-correct";
-            } else if (msg.text.includes("Round started!") || msg.text.includes("is choosing a word!")) {
-              classModifier = " msg-started"; // Matches your new round start phase updates
-            } else if (msg.text.includes("is drawing now")) {
-              classModifier = " msg-drawing";
-            } else if (msg.text.includes("joined the room")) {
-              classModifier = " msg-joined";
-            } else if (msg.text.includes("left the room")) {
-              classModifier = " msg-left";
-            } else if (msg.text.includes("room owner")) {
-              classModifier = " msg-owner";
-            } else if (msg.text.includes("won with a score")) {
-              classModifier = " msg-winner";
-            }
+          // Dynamically map message types to CSS classes
+          if (msg.type) {
+            classModifier = ` msg-${msg.type}`;
           }
 
           return (
             <div key={index} className={`chat-message-row${classModifier}`}>
-              {/* System alerts in the screenshots don't show 'System: ', just raw text */}
-              {!isSystem ? (
+              {!isSystem && msg.type !== "artist-chat" ? (
                 <>
                   <span className="chat-sender-name">{msg.sender}: </span>
                   <span>{msg.text}</span>
                 </>
               ) : (
+                /* System and private artist messages render cleanly as single block texts */
                 <span>{msg.text}</span>
               )}
             </div>

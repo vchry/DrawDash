@@ -694,35 +694,56 @@
   background-color: #ffffff;
 }
 
-/* Specific theme overrides matching the game state colors */
-.chat-message-row.msg-drawing {
-  background-color: #e8ebf4 !important;
-  color: #3b5998;
-  font-weight: bold;
-}
-
-.chat-message-row.msg-correct {
-  background-color: #d4f8cb !important;
-  color: #4cae4c;
-  font-weight: bold;
-}
-
-.chat-message-row.msg-close {
-  background-color: #fff9e6 !important;
-  color: #cca300;
-  font-weight: bold;
-}
-
-.chat-message-row.msg-room-alert {
-  background-color: #fff2e6 !important;
-  color: #ff8800;
-  font-weight: bold;
-}
-
 .chat-sender-name {
   font-weight: bold;
   color: #000000;
-  /* Dark name headers as shown in screenshot */
+}
+
+/* ==========================================================================
+   Special Custom Chat Types
+   ========================================================================== */
+
+/* Artist private chat message row */
+.chat-message-row.msg-artist-chat {
+  color: olive !important;
+  font-weight: 500;
+}
+
+/* {username} is drawing now! */
+.chat-message-row.msg-is-drawing {
+  color: #0055ff !important;
+  font-weight: bold;
+}
+
+/* {username} join the room! */
+.chat-message-row.msg-joined {
+  color: green !important;
+  font-weight: bold;
+}
+
+/* {username} left the room! */
+.chat-message-row.msg-left {
+  color: red !important;
+  font-weight: bold;
+}
+
+/* The word was '{word}' */
+.chat-message-row.msg-word-reveal {
+  color: green !important;
+  font-weight: bold;
+}
+
+/* {username} guess the word! */
+.chat-message-row.msg-correct-guess {
+  color: green !important;
+  background-color: #d4f8cb !important; /* Light green background */
+  font-weight: bold;
+}
+
+/* {username} won with score of {score} */
+.chat-message-row.msg-winner {
+  color: orange !important;
+  font-weight: bold;
 }
 
 /* Input system formatting */

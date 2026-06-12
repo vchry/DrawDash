@@ -101,7 +101,7 @@ const startTurn = (roomId: string) => {
   io.to(roomId).emit("chat_message", {
     sender: "System",
     text: `${nextArtist.username} is choosing a word!`,
-    isCorrect: false,
+    type: "system",
   });
 
   // Handle the 15-second selection countdown
@@ -146,8 +146,8 @@ const startDrawingRound = (roomId: string, chosenWord: string) => {
   const artistPlayer = room.players.find((p) => p.id === room.currentArtist);
   io.to(roomId).emit("chat_message", {
     sender: "System",
-    text: `🎨 Round started! ${artistPlayer?.username || "The artist"} is drawing!`,
-    isCorrect: false,
+    text: `${artistPlayer?.username || "The artist"} is drawing now!`,
+    type: "is-drawing",
   });
 
   // Handle main round drawing countdown
@@ -166,10 +166,9 @@ const startDrawingRound = (roomId: string, chosenWord: string) => {
 
       io.to(roomId).emit("chat_message", {
         sender: "System",
-        text: `⏰ Time's up! The word was: "${activeRoom.currentWord.toUpperCase()}"`,
-        isCorrect: false,
+        text: `The word was '${activeRoom.currentWord}'`,
+        type: "word-reveal",
       });
-
       startTurn(roomId);
     }
   }, 1000);
@@ -293,8 +292,8 @@ io.on("connection", (socket) => {
 
       io.to(roomId).emit("chat_message", {
         sender: "System",
-        text: `${username} joined the room!`,
-        isCorrect: false,
+        text: `${username} join the room!`,
+        type: "joined",
       });
     },
   );
@@ -352,11 +351,12 @@ io.on("connection", (socket) => {
       const secretWord = room.currentWord.toLowerCase();
       const isArtist = room.currentArtist === socket.id;
 
-      if (isArtist && room.phase === "drawing" && cleanedGuess === secretWord) {
+      // Artist text input handling during drawing round
+      if (isArtist && room.phase === "drawing") {
         socket.emit("chat_message", {
-          sender: "System",
-          text: "You cannot guess your own secret word!",
-          isCorrect: false,
+          sender: username,
+          text: `${username}: ${text}`,
+          type: "artist-chat",
         });
         return;
       }
@@ -377,22 +377,34 @@ io.on("connection", (socket) => {
           player.score += Math.max(20, room.timeLeft * 2);
         }
 
+        // 1. Send the light green "guessed the word!" message first
         io.to(roomId).emit("chat_message", {
           sender: "System",
-          text: `${username} guessed the word!`,
-          isCorrect: true,
+          text: `${username} guess the word!`,
+          type: "correct-guess",
         });
 
         io.to(roomId).emit("room_state_update", room);
 
+        // Check if all players (excluding the artist) have guessed correctly
         const totalGuessersNeeded = room.players.length - 1;
         if (
           room.correctGuessers.length >= totalGuessersNeeded &&
           totalGuessersNeeded > 0
         ) {
+          // Stop the active round countdown timer
           if (activeRooms[`interval_${roomId}`]) {
             clearInterval(activeRooms[`interval_${roomId}`]);
           }
+
+          // 2. Broadcast the green word reveal alert to everyone right before starting the next turn
+          io.to(roomId).emit("chat_message", {
+            sender: "System",
+            text: `The word was '${room.currentWord}'`,
+            type: "word-reveal",
+          });
+
+          // Proceed to choose the next round/artist
           startTurn(roomId);
         }
       } else {
@@ -420,11 +432,10 @@ io.on("connection", (socket) => {
       if (leavingPlayer) {
         io.to(roomId).emit("chat_message", {
           sender: "System",
-          text: `${leavingPlayer.username} left the room!`,
-          isCorrect: false,
+          text: `${leavingPlayer.username} left the room!`, // Make sure this matches!
+          type: "left",
         });
       }
-
       room.players = room.players.filter((p) => p.id !== socket.id);
       room.correctGuessers = room.correctGuessers.filter(
         (id) => id !== socket.id,
@@ -453,8 +464,8 @@ io.on("connection", (socket) => {
       } else if (room.gameStarted && room.currentArtist === socket.id) {
         io.to(roomId).emit("chat_message", {
           sender: "System",
-          text: "The artist left the match. Shuffling round...",
-          isCorrect: false,
+          text: `${leavingPlayer.username} left the room!`,
+          type: "left",
         });
         startTurn(roomId);
       }
