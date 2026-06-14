@@ -24,7 +24,10 @@ import GameOverWinners from "./components/GameOverWinners";
 const socket: Socket = io("http://localhost:3001");
 
 function App() {
-  const [username, setUsername] = useState("");
+  // FIXED: Cleaned up the destructuring syntax error here
+  const [username, setUsername] = useState<string>(() => {
+    return localStorage.getItem("dash_username") || "";
+  });
   const [roomId, setRoomId] = useState("");
   const [isJoined, setIsJoined] = useState(false);
   const [players, setPlayers] = useState<Player[]>([]);
@@ -46,10 +49,9 @@ function App() {
   const [width, setWidth] = useState(5);
   const [activeTool, setActiveTool] = useState<"brush" | "fill">("brush");
 
-  const [selectedAvatar, setSelectedAvatar] = useState({
-    body: 0,
-    eyes: 0,
-    mouth: 0,
+  const [selectedAvatar, setSelectedAvatar] = useState<{ body: number; eyes: number; mouth: number }>(() => {
+    const cachedAvatar = localStorage.getItem("dash_avatar");
+    return cachedAvatar ? JSON.parse(cachedAvatar) : { body: 0, eyes: 0, mouth: 0 };
   });
   const previousArtistRef = React.useRef<string | null>(null);
   const previousRoundRef = React.useRef<number>(0);
@@ -270,6 +272,14 @@ function App() {
       owner: i === ownerIndex ? 0 : null,
     }));
   });
+
+  useEffect(() => {
+    localStorage.setItem("dash_username", username);
+  }, [username]);
+
+  useEffect(() => {
+    localStorage.setItem("dash_avatar", JSON.stringify(selectedAvatar));
+  }, [selectedAvatar]);
 
   const currentPlayer = players.find((p) => p.id === roomState?.currentArtist);
 
