@@ -45,12 +45,16 @@ interface RoomState {
   currentWord: string;
   timeLeft: number;
   roundDuration: number;
+  maxPlayers: number;
+  totalRounds: number;
+  wordOptionsCount: number;
+  maxHints: number;
   gameStarted: boolean;
   artistIndex: number;
   currentRound: number;
-  totalRounds: number;
   correctGuessers: string[];
-  phase: "selecting" | "drawing"; // Added to track selection state
+  scoresBeforeRound?: Record<string, number>;
+  phase: "selecting" | "drawing";
 }
 
 const activeRooms: any = {};
@@ -73,20 +77,65 @@ const startTurn = (roomId: string) => {
   const room = activeRooms[roomId] as RoomState;
   if (!room || room.players.length === 0) return;
 
-  room.artistIndex = (room.artistIndex + 1) % room.players.length;
-  const nextArtist = room.players[room.artistIndex];
+  const nextIndex = (room.artistIndex + 1) % room.players.length;
+  const wrappedToNewCycle = nextIndex === 0;
 
+  // Advance artist index
+  room.artistIndex = nextIndex;
+  const nextArtist = room.players[room.artistIndex];
   if (!nextArtist) return;
 
-  room.currentRound = room.currentRound + 1;
-  if (room.currentRound > room.totalRounds) {
-    room.currentRound = room.totalRounds;
+  // Track the provisional next round number
+  let nextRoundNumber = room.currentRound;
+  if (wrappedToNewCycle) {
+    nextRoundNumber += 1;
+  }
+
+  // CRITICAL FIX: If the NEXT round exceeds total rounds, end game BEFORE updating currentRound state
+  if (nextRoundNumber > room.totalRounds) {
+    // Compute top winners
+    const top = [...room.players]
+      .sort((a, b) => (b.score || 0) - (a.score || 0))
+      .slice(0, 3)
+      .map((p) => ({
+        id: p.id,
+        username: p.username,
+        score: p.score,
+        body: p.body,
+        eyes: p.eyes,
+        mouth: p.mouth,
+      }));
+
+    io.to(roomId).emit("game_over", { winners: top });
+
+    // RESET GAME STATE COMPLETELY FOR REPLAYABILITY
+    room.gameStarted = false;
+    room.currentArtist = null;
+    room.phase = "selecting";
+    room.timeLeft = 0;
+    room.currentRound = 0; // Reset to 0 so topbar looks pristine on next start
+    room.artistIndex = -1; // Reset index cycle
+    room.correctGuessers = [];
+
+    // Clear any running timers
+    if (activeRooms[`interval_${roomId}`])
+      clearInterval(activeRooms[`interval_${roomId}`]);
+    if (activeRooms[`selection_${roomId}`])
+      clearInterval(activeRooms[`selection_${roomId}`]);
+
+    io.to(roomId).emit("room_state_update", room);
+    return;
+  }
+
+  // If we haven't exceeded total rounds, safely apply the incremented round
+  if (wrappedToNewCycle) {
+    room.currentRound = nextRoundNumber;
   }
 
   room.currentArtist = nextArtist.id;
   room.currentWord = "";
   room.phase = "selecting";
-  room.timeLeft = 15; // Set 15 seconds strictly for choosing a word
+  room.timeLeft = 15;
   room.correctGuessers = [];
 
   // Clear any existing loops
@@ -118,7 +167,6 @@ const startTurn = (roomId: string) => {
     if (activeRoom.timeLeft <= 0) {
       clearInterval(activeRooms[`selection_${roomId}`]);
 
-      // Auto-select a random word if the artist fails to choose in time
       const fallbackWord = getRandomWord();
       startDrawingRound(roomId, fallbackWord);
     }
@@ -136,6 +184,10 @@ const startDrawingRound = (roomId: string, chosenWord: string) => {
 
   room.phase = "drawing";
   room.currentWord = chosenWord;
+  // snapshot scores at the start of the round so we can compute deltas later
+  room.scoresBeforeRound = Object.fromEntries(
+    room.players.map((p) => [p.id, p.score]),
+  );
   room.timeLeft = room.roundDuration; // Reset timer to the custom gameplay duration (e.g., 90s)
 
   io.to(roomId).emit("room_state_update", room);
@@ -164,11 +216,32 @@ const startDrawingRound = (roomId: string, chosenWord: string) => {
     if (activeRoom.timeLeft <= 0) {
       clearInterval(activeRooms[`interval_${roomId}`]);
 
+      // Compute per-player score deltas since round start
+      const deltas = activeRoom.players.map((p) => {
+        const before = activeRoom.scoresBeforeRound?.[p.id] ?? 0;
+        return {
+          id: p.id,
+          username: p.username,
+          score: p.score,
+          delta: p.score - before,
+          body: p.body,
+          eyes: p.eyes,
+          mouth: p.mouth,
+        };
+      });
+
       io.to(roomId).emit("chat_message", {
         sender: "System",
         text: `The word was '${activeRoom.currentWord}'`,
         type: "word-reveal",
       });
+
+      io.to(roomId).emit("round_end", {
+        reason: "time_up",
+        word: activeRoom.currentWord,
+        players: deltas,
+      });
+
       startTurn(roomId);
     }
   }, 1000);
@@ -224,12 +297,15 @@ io.on("connection", (socket) => {
         currentWord: "",
         timeLeft: 15,
         roundDuration: 90,
+        maxPlayers: 6, // Default matching frontend
+        totalRounds: 3, // Default matching frontend
+        wordOptionsCount: 3, // Default matching frontend
+        maxHints: 2, // Default matching frontend
         gameStarted: false,
         artistIndex: -1,
         currentRound: 0,
-        totalRounds: 3,
-        correctGuessers: [],
         phase: "selecting",
+        correctGuessers: [],
       };
 
       const room = activeRooms[roomId] as RoomState;
@@ -273,6 +349,15 @@ io.on("connection", (socket) => {
         return;
       }
 
+      // CRITICAL FIX: Block new connections if maximum player limit is met
+      if (
+        room.players.length >= room.maxPlayers &&
+        !room.players.some((p) => p.id === socket.id)
+      ) {
+        socket.emit("join_failed", { reason: "Room is full!" });
+        return;
+      }
+
       socket.join(roomId);
 
       if (!room.players.some((p) => p.id === socket.id)) {
@@ -298,12 +383,32 @@ io.on("connection", (socket) => {
     },
   );
 
+  // CRITICAL FIX: Accepts partial settings changes from lobby view configurations
   socket.on(
     "update_settings",
-    ({ roomId, roundDuration }: { roomId: string; roundDuration: number }) => {
+    ({
+      roomId,
+      settings,
+    }: {
+      roomId: string;
+      settings?: Partial<RoomState>;
+    }) => {
       const room = activeRooms[roomId] as RoomState;
       if (room && room.hostId === socket.id && !room.gameStarted) {
-        room.roundDuration = roundDuration;
+        // CRITICAL FIX: Fallback to an empty object if settings is missing/undefined
+        const safeSettings = settings || {};
+
+        if (safeSettings.roundDuration !== undefined)
+          room.roundDuration = safeSettings.roundDuration;
+        if (safeSettings.maxPlayers !== undefined)
+          room.maxPlayers = safeSettings.maxPlayers;
+        if (safeSettings.totalRounds !== undefined)
+          room.totalRounds = safeSettings.totalRounds;
+        if (safeSettings.wordOptionsCount !== undefined)
+          room.wordOptionsCount = safeSettings.wordOptionsCount;
+        if (safeSettings.maxHints !== undefined)
+          room.maxHints = safeSettings.maxHints;
+
         io.to(roomId).emit("room_state_update", room);
       }
     },
@@ -312,7 +417,13 @@ io.on("connection", (socket) => {
   socket.on("start_game_request", ({ roomId }: { roomId: string }) => {
     const room = activeRooms[roomId] as RoomState;
     if (room && room.hostId === socket.id && !room.gameStarted) {
+      // Reset player scores back to 0 for the new match match
+      room.players.forEach((p) => (p.score = 0));
+
+      room.currentRound = 0;
+      room.artistIndex = -1;
       room.gameStarted = true;
+
       startTurn(roomId);
     }
   });
@@ -404,6 +515,26 @@ io.on("connection", (socket) => {
             type: "word-reveal",
           });
 
+          // Compute per-player score deltas since round start
+          const deltas = room.players.map((p) => {
+            const before = room.scoresBeforeRound?.[p.id] ?? 0;
+            return {
+              id: p.id,
+              username: p.username,
+              score: p.score,
+              delta: p.score - before,
+              body: p.body,
+              eyes: p.eyes,
+              mouth: p.mouth,
+            };
+          });
+
+          io.to(roomId).emit("round_end", {
+            reason: "everyone_guessed",
+            word: room.currentWord,
+            players: deltas,
+          });
+
           // Proceed to choose the next round/artist
           startTurn(roomId);
         }
@@ -432,7 +563,7 @@ io.on("connection", (socket) => {
       if (leavingPlayer) {
         io.to(roomId).emit("chat_message", {
           sender: "System",
-          text: `${leavingPlayer.username} left the room!`, // Make sure this matches!
+          text: `${leavingPlayer.username} left the room!`,
           type: "left",
         });
       }
@@ -464,7 +595,7 @@ io.on("connection", (socket) => {
       } else if (room.gameStarted && room.currentArtist === socket.id) {
         io.to(roomId).emit("chat_message", {
           sender: "System",
-          text: `${leavingPlayer.username} left the room!`,
+          text: `${leavingPlayer?.username || "The artist"} left the room!`,
           type: "left",
         });
         startTurn(roomId);

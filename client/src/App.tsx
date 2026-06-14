@@ -18,6 +18,8 @@ import Topbar from "./components/Topbar";
 import { getRandomWordsFromAll } from "./utils/wordUtils";
 import Toolbar from "./components/Toolbar";
 import Footer from "./components/Footer";
+import RoundResult from "./components/RoundResult";
+import GameOverWinners from "./components/GameOverWinners";
 
 const socket: Socket = io("http://localhost:3001");
 
@@ -31,6 +33,13 @@ function App() {
   const [roomError, setRoomError] = useState("");
   const [wordOptions, setWordOptions] = useState<string[]>([]);
   const [showPhaseSequence, setShowPhaseSequence] = useState(false);
+  const [showRoundIndicator, setShowRoundIndicator] = useState(false);
+  const [roundResult, setRoundResult] = useState<any | null>(null);
+  const [gameOverWinners, setGameOverWinners] = useState<any[] | null>(null);
+  const [pendingGameOverWinners, setPendingGameOverWinners] = useState<
+    any[] | null
+  >(null);
+  const roundResultRef = React.useRef<any | null>(null);
 
   // Shared Toolbar / Canvas States
   const [color, setColor] = useState("#000000");
@@ -43,6 +52,7 @@ function App() {
     mouth: 0,
   });
   const previousArtistRef = React.useRef<string | null>(null);
+  const previousRoundRef = React.useRef<number>(0);
 
   // Custom events to trigger internal canvas methods from the toolbar
   const triggerUndo = () => {
@@ -93,11 +103,32 @@ function App() {
       setShowPhaseSequence(false);
     });
 
+    socket.on("round_end", (payload: any) => {
+      setRoundResult(payload);
+      roundResultRef.current = payload;
+      setShowPhaseSequence(false);
+      setShowRoundIndicator(false);
+      setTimeout(() => {
+        setRoundResult(null);
+        roundResultRef.current = null;
+      }, 4000);
+    });
+
+    socket.on("game_over", (payload: any) => {
+      if (roundResultRef.current) {
+        setPendingGameOverWinners(payload.winners || []);
+      } else {
+        setGameOverWinners(payload.winners || []);
+      }
+    });
+
     return () => {
       socket.off("room_state_update");
       socket.off("timer_tick");
       socket.off("room_created");
       socket.off("word_selection_confirmed");
+      socket.off("round_end");
+      socket.off("game_over");
     };
   }, []);
 
@@ -108,26 +139,48 @@ function App() {
 
     if (!roomState.gameStarted) {
       previousArtistRef.current = null;
+      previousRoundRef.current = 0;
+      setShowPhaseSequence(false);
+      setShowRoundIndicator(false);
+      return;
+    }
+
+    if (roundResult || roomState.phase === "drawing") {
       setShowPhaseSequence(false);
       return;
     }
 
     const currentArtistId = roomState.currentArtist;
+    const currentRoundNumber = roomState.currentRound || 1;
 
     if (roomState.phase === "selecting") {
       if (currentArtistId && currentArtistId !== previousArtistRef.current) {
+        const isNewRound = currentRoundNumber !== previousRoundRef.current;
+
         previousArtistRef.current = currentArtistId;
+        previousRoundRef.current = currentRoundNumber;
+
         if (currentArtistId === socket.id) {
-          setWordOptions(getRandomWordsFromAll(3));
+          // Dynamic Fix: Word Count options display count controlled by lobby state choice
+          const dynamicCount = roomState.wordOptionsCount || 3;
+          setWordOptions(getRandomWordsFromAll(dynamicCount));
         } else {
           setWordOptions([]);
         }
+
+        setShowRoundIndicator(isNewRound);
         setShowPhaseSequence(true);
       }
-    } else if (roomState.phase === "drawing") {
-      setShowPhaseSequence(false);
     }
-  }, [roomState]);
+  }, [roomState, roundResult]);
+
+  useEffect(() => {
+    if (roundResult !== null) return;
+    if (!pendingGameOverWinners || pendingGameOverWinners.length === 0) return;
+
+    setGameOverWinners(pendingGameOverWinners);
+    setPendingGameOverWinners(null);
+  }, [roundResult, pendingGameOverWinners]);
 
   const handleCreateRoom = () => {
     if (!username.trim()) return;
@@ -157,9 +210,11 @@ function App() {
     });
   };
 
-  const handleDurationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = Number(e.target.value);
-    socket.emit("update_settings", { roomId, roundDuration: value });
+  const handleSettingChange = (key: string, value: number) => {
+    socket.emit("update_settings", {
+      roomId,
+      settings: { [key]: value },
+    });
   };
 
   const handleStartGame = useCallback(() => {
@@ -173,6 +228,11 @@ function App() {
     },
     [roomId],
   );
+
+  const handleRoundResultClose = useCallback(() => {
+    setRoundResult(null);
+    roundResultRef.current = null;
+  }, []);
 
   const handlePhaseSequenceComplete = useCallback(() => {
     setShowPhaseSequence(false);
@@ -212,6 +272,11 @@ function App() {
   });
 
   const currentPlayer = players.find((p) => p.id === roomState?.currentArtist);
+
+  const isRoundResultActive = !!roundResult;
+  const isGameOverActive = gameOverWinners && gameOverWinners.length > 0;
+  const isOverlayActive = isRoundResultActive || isGameOverActive;
+  const canDraw = isArtist && !isOverlayActive;
 
   return (
     <div className="game-container">
@@ -298,7 +363,20 @@ function App() {
             <div
               className={`middle-section ${roomState.gameStarted && !showPhaseSequence ? "canvas-mode" : ""}`}
             >
-              {showPhaseSequence && roomState && currentPlayer ? (
+              {/* Sequential Gating Fixed: prioritized round display sequence timeline accurately */}
+              {isRoundResultActive ? (
+                <RoundResult
+                  reason={roundResult.reason}
+                  word={roundResult.word}
+                  players={roundResult.players}
+                  onClose={handleRoundResultClose}
+                />
+              ) : isGameOverActive ? (
+                <GameOverWinners
+                  winners={gameOverWinners}
+                  onClose={() => setGameOverWinners(null)}
+                />
+              ) : showPhaseSequence && roomState && currentPlayer ? (
                 <GamePhaseSequence
                   currentPlayer={currentPlayer}
                   currentRound={currentRound}
@@ -313,25 +391,25 @@ function App() {
                   roomId={roomId}
                   roomState={roomState}
                   isHost={isHost}
-                  onDurationChange={handleDurationChange}
+                  onSettingChange={handleSettingChange}
                   onStartGame={handleStartGame}
                 />
               ) : (
                 <div
-                  className={`canvas-wrapper ${!isArtist ? "canvas-disabled" : ""}`}
+                  className={`canvas-wrapper ${!canDraw ? "canvas-disabled" : ""}`}
                 >
                   <Canvas
                     socket={socket}
                     roomId={roomId}
-                    isArtist={isArtist}
+                    isArtist={canDraw}
                     color={color}
                     width={width}
                     activeTool={activeTool}
                     setActiveTool={setActiveTool}
                   />
-                  {isArtist && (
+                  {canDraw && (
                     <Toolbar
-                      isArtist={isArtist}
+                      isArtist={canDraw}
                       color={color}
                       setColor={setColor}
                       width={width}
@@ -352,7 +430,7 @@ function App() {
           </div>
         </div>
       ) : null}
-      {!isJoined && <Footer/>}
+      {!isJoined && <Footer />}
     </div>
   );
 }

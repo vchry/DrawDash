@@ -800,6 +800,7 @@
   align-items: center;
   justify-content: center;
   color: white;
+  z-index: 99;
 
   /* Animation Defaults */
   animation-duration: 0.5s;
