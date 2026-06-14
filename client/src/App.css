@@ -1194,3 +1194,26 @@
 /* Footer {
   margin-top: 50px;
 } */
+
+.arrowleft {
+  height: 38px;
+}
+
+.arrowright {
+  height: 38px;
+  transform: scaleX(-1);
+}
+
+.arrow {
+  filter: grayscale(100%);
+  filter: brightness(100);
+  cursor: pointer;
+}
+
+.arrow:hover {
+  filter: none;
+}
+
+.tool-icon {
+  height: 38px;
+}
