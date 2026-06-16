@@ -438,7 +438,7 @@
   box-sizing: border-box; /* Ensures padding adjustments don't alter layout dimensions */
 
   position: relative; /* ADD THIS */
-  overflow: hidden; /* OPTIONAL */
+  /* overflow: hidden; */
 }
 
 /* This overrides the default padding when the canvas mounts */
