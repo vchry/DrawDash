@@ -72,6 +72,40 @@ const generateRoomId = (): string => {
   return roomId;
 };
 
+// HELPER: Calculates and awards points to the artist (MAX 58)
+const awardArtistPoints = (room: RoomState) => {
+  if (!room.currentArtist || room.correctGuessers.length === 0) return;
+
+  const totalGuessersNeeded = room.players.length - 1;
+  if (totalGuessersNeeded <= 0) return;
+
+  // 1. Calculate total points earned by guessers this round
+  let totalGuesserPointsThisRound = 0;
+  room.correctGuessers.forEach((id) => {
+    const p = room.players.find((player) => player.id === id);
+    if (p) {
+      const before = room.scoresBeforeRound?.[p.id] ?? 0;
+      totalGuesserPointsThisRound += p.score - before;
+    }
+  });
+
+  // 2. Compute the average score of the guessers
+  const avgGuesserScore =
+    totalGuesserPointsThisRound / room.correctGuessers.length;
+
+  // 3. Determine performance ratios (Speed factor out of max player score 325)
+  const speedRatio = avgGuesserScore / 325;
+  const completionRatio = room.correctGuessers.length / totalGuessersNeeded;
+
+  // 4. Scale artist score out of absolute MAX 58
+  const finalArtistScore = Math.floor(58 * speedRatio * completionRatio);
+
+  const artist = room.players.find((p) => p.id === room.currentArtist);
+  if (artist) {
+    artist.score += finalArtistScore;
+  }
+};
+
 // Phase 1: Starts the 15-second selection window for the artist
 const startTurn = (roomId: string) => {
   const room = activeRooms[roomId] as RoomState;
@@ -80,20 +114,16 @@ const startTurn = (roomId: string) => {
   const nextIndex = (room.artistIndex + 1) % room.players.length;
   const wrappedToNewCycle = nextIndex === 0;
 
-  // Advance artist index
   room.artistIndex = nextIndex;
   const nextArtist = room.players[room.artistIndex];
   if (!nextArtist) return;
 
-  // Track the provisional next round number
   let nextRoundNumber = room.currentRound;
   if (wrappedToNewCycle) {
     nextRoundNumber += 1;
   }
 
-  // CRITICAL FIX: If the NEXT round exceeds total rounds, end game BEFORE updating currentRound state
   if (nextRoundNumber > room.totalRounds) {
-    // Compute top winners
     const top = [...room.players]
       .sort((a, b) => (b.score || 0) - (a.score || 0))
       .slice(0, 3)
@@ -108,16 +138,14 @@ const startTurn = (roomId: string) => {
 
     io.to(roomId).emit("game_over", { winners: top });
 
-    // RESET GAME STATE COMPLETELY FOR REPLAYABILITY
     room.gameStarted = false;
     room.currentArtist = null;
     room.phase = "selecting";
     room.timeLeft = 0;
-    room.currentRound = 0; // Reset to 0 so topbar looks pristine on next start
-    room.artistIndex = -1; // Reset index cycle
+    room.currentRound = 0;
+    room.artistIndex = -1;
     room.correctGuessers = [];
 
-    // Clear any running timers
     if (activeRooms[`interval_${roomId}`])
       clearInterval(activeRooms[`interval_${roomId}`]);
     if (activeRooms[`selection_${roomId}`])
@@ -127,7 +155,6 @@ const startTurn = (roomId: string) => {
     return;
   }
 
-  // If we haven't exceeded total rounds, safely apply the incremented round
   if (wrappedToNewCycle) {
     room.currentRound = nextRoundNumber;
   }
@@ -138,7 +165,6 @@ const startTurn = (roomId: string) => {
   room.timeLeft = 15;
   room.correctGuessers = [];
 
-  // Clear any existing loops
   if (activeRooms[`interval_${roomId}`])
     clearInterval(activeRooms[`interval_${roomId}`]);
   if (activeRooms[`selection_${roomId}`])
@@ -153,7 +179,6 @@ const startTurn = (roomId: string) => {
     type: "system",
   });
 
-  // Handle the 15-second selection countdown
   activeRooms[`selection_${roomId}`] = setInterval(() => {
     const activeRoom = activeRooms[roomId] as RoomState;
     if (!activeRoom) {
@@ -184,15 +209,12 @@ const startDrawingRound = (roomId: string, chosenWord: string) => {
 
   room.phase = "drawing";
   room.currentWord = chosenWord;
-  // snapshot scores at the start of the round so we can compute deltas later
   room.scoresBeforeRound = Object.fromEntries(
     room.players.map((p) => [p.id, p.score]),
   );
-  room.timeLeft = room.roundDuration; // Reset timer to the custom gameplay duration (e.g., 90s)
+  room.timeLeft = room.roundDuration;
 
   io.to(roomId).emit("room_state_update", room);
-
-  // Alert clients that choice is locked and drawing begins
   io.to(roomId).emit("word_selection_confirmed", { word: chosenWord });
 
   const artistPlayer = room.players.find((p) => p.id === room.currentArtist);
@@ -202,7 +224,6 @@ const startDrawingRound = (roomId: string, chosenWord: string) => {
     type: "is-drawing",
   });
 
-  // Handle main round drawing countdown
   activeRooms[`interval_${roomId}`] = setInterval(() => {
     const activeRoom = activeRooms[roomId] as RoomState;
     if (!activeRoom) {
@@ -216,7 +237,9 @@ const startDrawingRound = (roomId: string, chosenWord: string) => {
     if (activeRoom.timeLeft <= 0) {
       clearInterval(activeRooms[`interval_${roomId}`]);
 
-      // Compute per-player score deltas since round start
+      // Award points to the artist based on final round stats
+      awardArtistPoints(activeRoom);
+
       const deltas = activeRoom.players.map((p) => {
         const before = activeRoom.scoresBeforeRound?.[p.id] ?? 0;
         return {
@@ -297,10 +320,10 @@ io.on("connection", (socket) => {
         currentWord: "",
         timeLeft: 15,
         roundDuration: 90,
-        maxPlayers: 6, // Default matching frontend
-        totalRounds: 3, // Default matching frontend
-        wordOptionsCount: 3, // Default matching frontend
-        maxHints: 2, // Default matching frontend
+        maxPlayers: 6,
+        totalRounds: 3,
+        wordOptionsCount: 3,
+        maxHints: 2,
         gameStarted: false,
         artistIndex: -1,
         currentRound: 0,
@@ -349,7 +372,6 @@ io.on("connection", (socket) => {
         return;
       }
 
-      // CRITICAL FIX: Block new connections if maximum player limit is met
       if (
         room.players.length >= room.maxPlayers &&
         !room.players.some((p) => p.id === socket.id)
@@ -383,7 +405,6 @@ io.on("connection", (socket) => {
     },
   );
 
-  // CRITICAL FIX: Accepts partial settings changes from lobby view configurations
   socket.on(
     "update_settings",
     ({
@@ -395,7 +416,6 @@ io.on("connection", (socket) => {
     }) => {
       const room = activeRooms[roomId] as RoomState;
       if (room && room.hostId === socket.id && !room.gameStarted) {
-        // CRITICAL FIX: Fallback to an empty object if settings is missing/undefined
         const safeSettings = settings || {};
 
         if (safeSettings.roundDuration !== undefined)
@@ -417,7 +437,6 @@ io.on("connection", (socket) => {
   socket.on("start_game_request", ({ roomId }: { roomId: string }) => {
     const room = activeRooms[roomId] as RoomState;
     if (room && room.hostId === socket.id && !room.gameStarted) {
-      // Reset player scores back to 0 for the new match match
       room.players.forEach((p) => (p.score = 0));
 
       room.currentRound = 0;
@@ -432,7 +451,6 @@ io.on("connection", (socket) => {
     "word_selected",
     ({ roomId, word }: { roomId: string; word: string }) => {
       const room = activeRooms[roomId] as RoomState;
-      // Accept incoming selections exclusively during the selection phase
       if (
         room &&
         room.currentArtist === socket.id &&
@@ -462,7 +480,6 @@ io.on("connection", (socket) => {
       const secretWord = room.currentWord.toLowerCase();
       const isArtist = room.currentArtist === socket.id;
 
-      // Artist text input handling during drawing round
       if (isArtist && room.phase === "drawing") {
         socket.emit("chat_message", {
           sender: username,
@@ -474,7 +491,6 @@ io.on("connection", (socket) => {
 
       const hasAlreadyGuessed = room.correctGuessers.includes(socket.id);
 
-      // Only evaluate valid answers during the active drawing phase
       if (
         room.gameStarted &&
         room.phase === "drawing" &&
@@ -484,11 +500,14 @@ io.on("connection", (socket) => {
 
         room.correctGuessers.push(socket.id);
         const player = room.players.find((p) => p.id === socket.id);
+
+        // NEW: Player scoring logic scaled with an absolute MAX of 325 and MIN of 50
         if (player) {
-          player.score += Math.max(20, room.timeLeft * 2);
+          const timeRatio = room.timeLeft / room.roundDuration;
+          const earnedPoints = Math.floor(timeRatio * 275) + 50;
+          player.score += earnedPoints;
         }
 
-        // 1. Send the light green "guessed the word!" message first
         io.to(roomId).emit("chat_message", {
           sender: "System",
           text: `${username} guess the word!`,
@@ -497,25 +516,24 @@ io.on("connection", (socket) => {
 
         io.to(roomId).emit("room_state_update", room);
 
-        // Check if all players (excluding the artist) have guessed correctly
         const totalGuessersNeeded = room.players.length - 1;
         if (
           room.correctGuessers.length >= totalGuessersNeeded &&
           totalGuessersNeeded > 0
         ) {
-          // Stop the active round countdown timer
           if (activeRooms[`interval_${roomId}`]) {
             clearInterval(activeRooms[`interval_${roomId}`]);
           }
 
-          // 2. Broadcast the green word reveal alert to everyone right before starting the next turn
+          // Award points to artist when everyone guesses correctly before time is up
+          awardArtistPoints(room);
+
           io.to(roomId).emit("chat_message", {
             sender: "System",
             text: `The word was '${room.currentWord}'`,
             type: "word-reveal",
           });
 
-          // Compute per-player score deltas since round start
           const deltas = room.players.map((p) => {
             const before = room.scoresBeforeRound?.[p.id] ?? 0;
             return {
@@ -535,7 +553,6 @@ io.on("connection", (socket) => {
             players: deltas,
           });
 
-          // Proceed to choose the next round/artist
           startTurn(roomId);
         }
       } else {

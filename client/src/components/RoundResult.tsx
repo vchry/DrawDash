@@ -28,9 +28,16 @@ export default function RoundResult({
 }: RoundResultProps) {
   const [isExiting, setIsExiting] = useState(false);
 
+  // Sort players by points gained this round (highest first)
+  const sortedPlayers = [...players].sort((a, b) => {
+    if (b.delta !== a.delta) return b.delta - a.delta;
+    return b.score - a.score; // tie-breaker: total score
+  });
+
   useEffect(() => {
     const timer = setTimeout(() => setIsExiting(true), duration);
     const finish = setTimeout(() => onClose?.(), duration + 500);
+
     return () => {
       clearTimeout(timer);
       clearTimeout(finish);
@@ -43,6 +50,7 @@ export default function RoundResult({
         <h2>
           The word was <span>{word}</span>
         </h2>
+
         <h3>
           {reason === "everyone_guessed"
             ? "Everyone guessed the word!"
@@ -50,7 +58,7 @@ export default function RoundResult({
         </h3>
 
         <ul className="rr-player-list">
-          {players.map((p) => (
+          {sortedPlayers.map((p, index) => (
             <li key={p.id} className="rr-player-row">
               <div className="rr-player-meta">
                 <div className="rr-avatar">
@@ -64,8 +72,16 @@ export default function RoundResult({
                 </div>
 
                 <div className="rr-player-details">
-                  <div className="rr-player-name">{p.username}</div>
-                  <div className="rr-player-total">{p.score} pts</div>
+                  <div className="rr-player-name">
+                    {/* {index === 0 && p.delta > 0 ? "🥇 " : ""}
+                    {index === 1 && p.delta > 0 ? "🥈 " : ""}
+                    {index === 2 && p.delta > 0 ? "🥉 " : ""} */}
+                    {p.username}
+                  </div>
+
+                  <div className="rr-player-total">
+                    Total Score: {p.score} pts
+                  </div>
                 </div>
               </div>
 
@@ -83,32 +99,6 @@ export default function RoundResult({
             </li>
           ))}
         </ul>
-        {/* <ul className="round-result-players">
-          {players.map((p) => (
-            <li key={p.id} className="round-result-player">
-              <div className="player-meta">
-                <div className="player-avatar-small">
-                  <Avatar
-                    body={p.body ?? 0}
-                    eyes={p.eyes ?? 0}
-                    mouth={p.mouth ?? 0}
-                    size={48}
-                    special={null}
-                  />
-                </div>
-                <div className="player-info">
-                  <div className="player-name">{p.username}</div>
-                  <div className="player-score">{p.score} pts</div>
-                </div>
-              </div>
-              <div
-                className={`player-delta ${p.delta > 0 ? "positive" : p.delta < 0 ? "negative" : "neutral"}`}
-              >
-                {p.delta > 0 ? `+${p.delta}` : p.delta}
-              </div>
-            </li>
-          ))}
-        </ul> */}
       </div>
     </div>
   );
