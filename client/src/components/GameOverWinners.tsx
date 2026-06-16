@@ -1,71 +1,130 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Avatar from "./Avatar";
 
 interface Winner {
-    id: string;
-    username: string;
-    score: number;
-    body?: number;
-    eyes?: number;
-    mouth?: number;
+  id: string;
+  username: string;
+  score: number;
+  body?: number;
+  eyes?: number;
+  mouth?: number;
 }
 
 interface GameOverWinnersProps {
-    winners: Winner[];
-    onClose?: () => void;
-    duration?: number;
+  winners: Winner[];
+  onClose?: () => void;
+  duration?: number;
 }
 
-export default function GameOverWinners({ winners, onClose, duration = 4000 }: GameOverWinnersProps) {
-    const [isExiting, setIsExiting] = useState(false);
+export default function GameOverWinners({
+  winners,
+  onClose,
+  duration = 4000,
+}: GameOverWinnersProps) {
+  const [isExiting, setIsExiting] = useState(false);
 
-    useEffect(() => {
-        const timer = window.setTimeout(() => {
-            setIsExiting(true);
-            setTimeout(() => onClose?.(), 500);
-        }, duration);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setIsExiting(true);
+      setTimeout(() => onClose?.(), 500);
+    }, duration);
 
-        return () => {
-            window.clearTimeout(timer);
-        };
-    }, [duration, onClose]);
+    return () => window.clearTimeout(timer);
+  }, [duration, onClose]);
 
-    return (
-        <div className={`round-indicator ${isExiting ? "slide-out" : "slide-in"}`}>
-            <div className="round-content game-over-card">
-                <h2>Game Over</h2>
-                <h3>Top Players</h3>
+  const podium = useMemo(() => {
+    return [...winners]
+      .sort((a, b) => (b.score || 0) - (a.score || 0))
+      .slice(0, 3);
+  }, [winners]);
 
-                <ol className="winners-list">
-                    {(() => {
-                        // compute ranks so tied scores share the same rank
-                        const sorted = [...winners].sort((a, b) => (b.score || 0) - (a.score || 0));
-                        const out: Array<Winner & { rank: number }> = [];
-                        let prevScore: number | null = null;
-                        let prevRank = 0;
-                        for (let i = 0; i < sorted.length; i++) {
-                            const w = sorted[i];
-                            const score = w.score || 0;
-                            const rank = i === 0 ? 1 : score === prevScore ? prevRank : i + 1;
-                            out.push({ ...w, rank });
-                            prevScore = score;
-                            prevRank = rank;
-                        }
-                        return out.map((w, idx) => (
-                            <li key={w.id} className={`winner winner-${idx + 1}`}>
-                                <div className="winner-avatar">
-                                    <Avatar body={w.body ?? 0} eyes={w.eyes ?? 0} mouth={w.mouth ?? 0} size={72} special={null} />
-                                </div>
-                                <div className="winner-info">
-                                    <div className="winner-name">{w.username}</div>
-                                    <div className="winner-score">{w.score} pts</div>
-                                </div>
-                                <div className="winner-rank">#{w.rank}</div>
-                            </li>
-                        ));
-                    })()}
-                </ol>
+  const first = podium[0];
+  const second = podium[1];
+  const third = podium[2];
+
+  return (
+    <div className={`round-indicator ${isExiting ? "slide-out" : "slide-in"}`}>
+      <div className="game-over-card">
+        {first && (
+          <h2 className="podium-title">
+            <span className="winner-highlight">{first.username}</span> is the
+            winner!
+          </h2>
+        )}
+
+        <div className="podium-container">
+          {/* SECOND PLACE */}
+          {second && (
+            <div className="podium-player second-place">
+              <div className="podium-avatar">
+                <Avatar
+                  body={second.body ?? 0}
+                  eyes={second.eyes ?? 0}
+                  mouth={second.mouth ?? 0}
+                  size={120}
+                  special={null}
+                />
+              </div>
+
+              <div className="podium-block podium-silver">
+                <div className="podium-rank">#2</div>
+
+                <div className="podium-name">{second.username}</div>
+
+                <div className="podium-score">{second.score} points</div>
+              </div>
             </div>
+          )}
+
+          {/* FIRST PLACE */}
+          {first && (
+            <div className="podium-player first-place">
+              <div className="winner-crown">👑</div>
+
+              <div className="podium-avatar">
+                <Avatar
+                  body={first.body ?? 0}
+                  eyes={first.eyes ?? 0}
+                  mouth={first.mouth ?? 0}
+                  size={150}
+                  special={null}
+                />
+              </div>
+
+              <div className="podium-block podium-gold">
+                <div className="podium-rank">#1</div>
+
+                <div className="podium-name">{first.username}</div>
+
+                <div className="podium-score">{first.score} points</div>
+              </div>
+            </div>
+          )}
+
+          {/* THIRD PLACE */}
+          {third && (
+            <div className="podium-player third-place">
+              <div className="podium-avatar">
+                <Avatar
+                  body={third.body ?? 0}
+                  eyes={third.eyes ?? 0}
+                  mouth={third.mouth ?? 0}
+                  size={110}
+                  special={null}
+                />
+              </div>
+
+              <div className="podium-block podium-bronze">
+                <div className="podium-rank">#3</div>
+
+                <div className="podium-name">{third.username}</div>
+
+                <div className="podium-score">{third.score} points</div>
+              </div>
+            </div>
+          )}
         </div>
-    );
+      </div>
+    </div>
+  );
 }
