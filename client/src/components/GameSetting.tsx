@@ -11,7 +11,7 @@ interface PregameLobbyProps {
   roomId: string;
   roomState: RoomState;
   isHost: boolean;
-  onDurationChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  onSettingChange: (key: string, value: number) => void;
   onStartGame: () => void;
 }
 
@@ -19,7 +19,7 @@ export default function PregameLobby({
   roomId,
   roomState,
   isHost,
-  onDurationChange,
+  onSettingChange,
   onStartGame,
 }: PregameLobbyProps) {
   const [copied, setCopied] = useState(false);
@@ -34,112 +34,126 @@ export default function PregameLobby({
   return (
     <div className="setting-component">
       {/* MIDDLE COLUMN: Settings */}
-        <div className="settings-list">
-          <div className="setting-row">
-            <label>
-              <img src={Players} alt="Player Gif" width={30} /> Players
-            </label>
-            <select disabled={!isHost} defaultValue="6">
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="8">8</option>
-              <option value="9">9</option>
-              <option value="10">10</option>
-            </select>
-          </div>
-          <div className="setting-row">
-            <label>
-              <img src={Drawtime} alt="Player Gif" width={30} /> Drawtime
-            </label>
-            <select
-              value={roomState.roundDuration}
-              onChange={onDurationChange}
-              disabled={!isHost}
-            >
-              <option value="15">15</option>
-              <option value="30">30</option>
-              <option value="45">45</option>
-              <option value="60">60</option>
-              <option value="75">75</option>
-              <option value="90">90</option>
-              <option value="105">105</option>
-              <option value="120">120</option>
-              <option value="135">135</option>
-              <option value="150">150</option>
-              <option value="165">165</option>
-              <option value="180">180</option>
-              <option value="195">195</option>
-              <option value="210">210</option>
-              <option value="225">225</option>
-              <option value="240">240</option>
-            </select>
-          </div>
-          <div className="setting-row">
-            <label>
-              <img src={Round} alt="Player Gif" width={30} /> Rounds
-            </label>
-            <select disabled={!isHost} defaultValue="3">
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="8">8</option>
-              <option value="9">9</option>
-              <option value="10">10</option>
-            </select>
-          </div>
-          <div className="setting-row">
-            <label>
-              <img src={WordCount} alt="Player Gif" width={30} /> Word Count
-            </label>
-            <select disabled={!isHost} defaultValue="3">
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-            </select>
-          </div>
-          <div className="setting-row">
-            <label>
-              <img src={Hint} alt="Player Gif" width={30} /> Hints
-            </label>
-            <select disabled={!isHost} defaultValue="2">
-              <option value="0">0</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-            </select>
-          </div>
+      <div className="settings-list">
+        <div className="setting-row">
+          <label>
+            <img src={Players} alt="Player Gif" width={30} /> Players
+          </label>
+          <select disabled={!isHost} defaultValue="6">
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+          </select>
         </div>
-
-        <div className="action-buttons">
-          {isHost ? (
-            <button className="start-btn" onClick={onStartGame}>
-              Start!
-            </button>
-          ) : (
-            <button className="start-btn disabled-btn" disabled>
-              Waiting for Host...
-            </button>
-          )}
-
-          {/* UPDATED: Displays the dynamic Room ID text or clipboard verification state */}
-          <button
-            className="invite-btn"
-            onClick={handleCopyRoomId}
-            style={{ fontWeight: "bold" }}
+        <div className="setting-row">
+          <label>
+            <img src={Drawtime} alt="Player Gif" width={30} /> Drawtime
+          </label>
+          <select
+            value={roomState.roundDuration}
+            disabled={!isHost}
+            onChange={(e) =>
+              onSettingChange("roundDuration", Number(e.target.value))
+            }
           >
-            {copied ? "Copied!" : `Room ID: ${roomId}`}
-          </button>
+            <option value="15">15</option>
+            <option value="30">30</option>
+            <option value="45">45</option>
+            <option value="60">60</option>
+            <option value="75">75</option>
+            <option value="90">90</option>
+            <option value="105">105</option>
+            <option value="120">120</option>
+            <option value="135">135</option>
+            <option value="150">150</option>
+            <option value="165">165</option>
+            <option value="180">180</option>
+            <option value="195">195</option>
+            <option value="210">210</option>
+            <option value="225">225</option>
+            <option value="240">240</option>
+          </select>
         </div>
+        <div className="setting-row">
+          <label>
+            <img src={Round} alt="Player Gif" width={30} /> Rounds
+          </label>
+          <select
+            value={roomState.totalRounds}
+            disabled={!isHost}
+            onChange={(e) =>
+              onSettingChange("totalRounds", Number(e.target.value))
+            }
+          >
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+          </select>
+        </div>
+        <div className="setting-row">
+          <label>
+            <img src={WordCount} alt="Player Gif" width={30} /> Word Count
+          </label>
+          <select
+            value={roomState.wordOptionsCount}
+            disabled={!isHost}
+            onChange={(e) =>
+              onSettingChange("wordOptionsCount", Number(e.target.value))
+            }
+          >
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </div>
+        <div className="setting-row">
+          <label>
+            <img src={Hint} alt="Player Gif" width={30} /> Hints
+          </label>
+          <select disabled={!isHost} defaultValue="2">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="action-buttons">
+        {isHost ? (
+          <button className="start-btn" onClick={onStartGame}>
+            Start!
+          </button>
+        ) : (
+          <button className="start-btn disabled-btn" disabled>
+            Waiting for Host...
+          </button>
+        )}
+
+        {/* UPDATED: Displays the dynamic Room ID text or clipboard verification state */}
+        <button
+          className="invite-btn"
+          onClick={handleCopyRoomId}
+          style={{ fontWeight: "bold" }}
+        >
+          {copied ? "Copied!" : `Room ID: ${roomId}`}
+        </button>
+      </div>
     </div>
 
     // <div className="chat-column">

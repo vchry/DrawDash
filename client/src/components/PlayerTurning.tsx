@@ -16,21 +16,23 @@ export default function PlayerTurning({
   const [isExiting, setIsExiting] = useState(false);
 
   useEffect(() => {
-    // 1. Wait for the viewing duration, then set the exit state
+    if (!onComplete) {
+      return;
+    }
+
     const displayTimer = setTimeout(() => {
       setIsExiting(true);
     }, duration);
 
     return () => clearTimeout(displayTimer);
-  }, [duration]);
+  }, [duration, onComplete]);
 
   useEffect(() => {
-    // 2. Only fire onComplete once the 500ms slide-out animation finishes
-    if (!isExiting) return;
+    if (!isExiting || !onComplete) return;
 
     const exitTimer = setTimeout(() => {
-      onComplete?.();
-    }, 500); // Matches the 0.5s CSS animation duration
+      onComplete();
+    }, 500);
 
     return () => clearTimeout(exitTimer);
   }, [isExiting, onComplete]);

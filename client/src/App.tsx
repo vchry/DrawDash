@@ -395,6 +395,7 @@ function App() {
                   onWordSelected={handleWordSelected}
                   onSequenceComplete={handlePhaseSequenceComplete}
                   isArtist={isArtist}
+                  showRoundIndicator={showRoundIndicator}
                 />
               ) : !roomState.gameStarted ? (
                 <GameSetting

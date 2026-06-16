@@ -12,6 +12,7 @@ interface GamePhaseSequenceProps {
     onWordSelected: (word: string) => void;
     onSequenceComplete?: () => void;
     isArtist?: boolean;
+    showRoundIndicator: boolean;
 }
 
 type SequencePhase = "round" | "player" | "word-options" | "complete";
@@ -24,12 +25,21 @@ export default function GamePhaseSequence({
     onWordSelected,
     onSequenceComplete,
     isArtist = false,
+    showRoundIndicator,
 }: GamePhaseSequenceProps) {
-    const [currentPhase, setCurrentPhase] = useState<SequencePhase>("round");
+    const [currentPhase, setCurrentPhase] = useState<SequencePhase>(
+        showRoundIndicator
+            ? "round"
+            : (isArtist ? "word-options" : "player")
+    );
 
     const handleRoundComplete = useCallback(() => {
-        setCurrentPhase("player");
-    }, []);
+        if (isArtist) {
+            setCurrentPhase("word-options");
+        } else {
+            setCurrentPhase("player");
+        }
+    }, [isArtist]);
 
     const handlePlayerComplete = useCallback(() => {
         setCurrentPhase("word-options");
@@ -59,7 +69,7 @@ export default function GamePhaseSequence({
             {currentPhase === "player" && (
                 <PlayerTurning
                     player={currentPlayer}
-                    onComplete={handlePlayerComplete}
+                    onComplete={isArtist ? handlePlayerComplete : undefined}
                 />
             )}
             {currentPhase === "word-options" && (

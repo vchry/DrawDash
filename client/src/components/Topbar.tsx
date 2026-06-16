@@ -9,8 +9,8 @@ interface TopBarProps {
 }
 
 export default function TopBar({ roomState, timer }: TopBarProps) {
-  const currentRound = roomState.currentRound || 1;
-  const totalRounds = roomState.totalRounds || 3; 
+  const currentRound = roomState.currentRound ?? 0;
+  const totalRounds = roomState.totalRounds || 3;
 
   // Determine current game status using backend phase states
   let statusText = "WAITING";
@@ -18,8 +18,8 @@ export default function TopBar({ roomState, timer }: TopBarProps) {
     if (roomState.phase === "selecting") {
       statusText = "CHOOSING WORD...";
     } else if (roomState.phase === "drawing") {
-      statusText = roomState.currentWord 
-        ? `WORD: ${roomState.currentWord.toUpperCase()}` 
+      statusText = roomState.currentWord
+        ? `WORD: ${roomState.currentWord.toUpperCase()}`
         : "DRAWING...";
     }
   }
