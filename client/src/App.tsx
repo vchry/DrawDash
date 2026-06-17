@@ -62,6 +62,11 @@ function App() {
   const previousArtistRef = React.useRef<string | null>(null);
   const previousRoundRef = React.useRef<number>(0);
 
+  // State to track which specific hero avatar is currently playing its pop animation
+  const [animatingAvatarIndex, setAnimatingAvatarIndex] = useState<
+    number | null
+  >(null);
+
   // Custom events to trigger internal canvas methods from the toolbar
   const triggerUndo = () => {
     window.dispatchEvent(new CustomEvent("canvas-undo"));
@@ -266,7 +271,8 @@ function App() {
     return arr;
   }
 
-  const [avatars] = useState(() => {
+  // Set hook state up with setter to make feature elements mutable
+  const [avatars, setAvatars] = useState(() => {
     const eyeIndexes = shuffle([0, 1, 2, 3, 4, 5, 6, 7]);
     const mouthIndexes = shuffle([0, 1, 2, 3, 4, 5, 6, 7]);
     const ownerIndex = Math.floor(Math.random() * 8);
@@ -278,6 +284,26 @@ function App() {
       owner: i === ownerIndex ? 0 : null,
     }));
   });
+
+  // Handler to shuffle features on click & toggle animation
+  const handleHeroClick = (clickedIndex: number) => {
+    setAvatars((prevAvatars) =>
+      prevAvatars.map((avatar, idx) => {
+        if (idx !== clickedIndex) return avatar;
+        return {
+          ...avatar,
+          eyes: Math.floor(Math.random() * 8),
+          mouth: Math.floor(Math.random() * 8),
+        };
+      }),
+    );
+
+    // Fire zoom popup animation class
+    setAnimatingAvatarIndex(clickedIndex);
+    setTimeout(() => {
+      setAnimatingAvatarIndex(null);
+    }, 250); // Match animation configuration lifespan duration
+  };
 
   useEffect(() => {
     localStorage.setItem("dash_username", username);
@@ -308,7 +334,12 @@ function App() {
         {!isJoined && (
           <div className="hero-avatar">
             {avatars.map((avatar, index) => (
-              <div className="hero" key={index}>
+              <div
+                className={`hero ${animatingAvatarIndex === index ? "pop-animation" : ""}`}
+                key={index}
+                onClick={() => handleHeroClick(index)}
+                style={{ cursor: "pointer" }}
+              >
                 <div
                   className="layer body"
                   style={{
