@@ -51,18 +51,34 @@ export default function Avatar({
         ...style,
       }}
     >
-      {/* Layer 0: Body */}
-      <div className="layer body" style={getSpriteStyle(body, 0)} />
+      {/* Layer 0: Body - Keys dynamically but stays perfectly still (no asset-hop class) */}
+      <div 
+        key={`body-${body}`}
+        className="layer body" 
+        style={getSpriteStyle(body, 0)} 
+      />
       
-      {/* Layer 1: Eyes */}
-      <div className="layer eyes" style={getSpriteStyle(eyes, 1)} />
+      {/* Layer 1: Eyes - Hops independently when eyes change */}
+      <div 
+        key={`eyes-${eyes}`}
+        className="layer eyes asset-hop" 
+        style={getSpriteStyle(eyes, 1)} 
+      />
       
-      {/* Layer 2: Mouth */}
-      <div className="layer mouth" style={getSpriteStyle(mouth, 2)} />
+      {/* Layer 2: Mouth - Hops independently when mouth changes */}
+      <div 
+        key={`mouth-${mouth}`}
+        className="layer mouth asset-hop" 
+        style={getSpriteStyle(mouth, 2)} 
+      />
       
-      {/* Layer 3: Special (Halo / Crown row) */}
+      {/* Layer 3: Special - Hops independently when special item changes */}
       {special !== null && special !== undefined && (
-        <div className="layer special" style={getSpriteStyle(special, 3)} />
+        <div 
+          key={`special-${special}`}
+          className="layer special asset-hop" 
+          style={getSpriteStyle(special, 3)} 
+        />
       )}
     </div>
   );

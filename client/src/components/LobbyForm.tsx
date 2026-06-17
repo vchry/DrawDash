@@ -25,7 +25,7 @@ interface LobbyFormProps {
   onPlay: (e: React.FormEvent) => void;
   onCreateRoom: () => void;
   onJoinRoom: (e: React.FormEvent) => void;
-  serverError?: string; // Add this to accept errors from the parent
+  serverError?: string;
 }
 
 export default function LobbyForm({
@@ -44,7 +44,7 @@ export default function LobbyForm({
   onRandomize,
   onPlay,
   onCreateRoom,
-  serverError, // Destructure the new prop
+  serverError,
 }: LobbyFormProps) {
   const [error, setError] = useState("");
 
@@ -53,7 +53,6 @@ export default function LobbyForm({
     setTimeout(() => setError(""), 3000);
   };
 
-  // NEW: Watch for external errors (like "Invalid Room ID") and trigger the toast
   useEffect(() => {
     if (serverError) {
       triggerError(serverError);
@@ -81,21 +80,6 @@ export default function LobbyForm({
     onJoinRoom(e);
   };
 
-  // const leftArrowStyle = {
-  //   width: "40px",
-  //   height: "40px",
-  //   cursor: "pointer",
-  //   backgroundImage: `url(${arrowGif})`,
-  //   backgroundSize: "80px 40px",
-  //   backgroundPosition: "0px 0px",
-  //   backgroundRepeat: "no-repeat",
-  // };
-
-  // const rightArrowStyle = {
-  //   ...leftArrowStyle,
-  //   backgroundPosition: "-40px 0px",
-  // };
-
   return (
     <>
       <div className="toast-container">
@@ -113,7 +97,6 @@ export default function LobbyForm({
           />
         </div>
 
-        {/* ... Avatar Section ... */}
         <div className="avatar-section">
           <div className="avatar-controls">
             <img
@@ -134,12 +117,10 @@ export default function LobbyForm({
               onClick={onPrevBody}
               className="arrow arrowright"
             />
-            {/* <div style={leftArrowStyle} onClick={onPrevEyes} />
-            <div style={leftArrowStyle} onClick={onPrevMouth} />
-            <div style={leftArrowStyle} onClick={onPrevBody} /> */}
           </div>
 
           <div className="avatar-preview">
+            {/* Component renders without a master wrapper layout to prevent total sizing zoom */}
             <Avatar
               body={selectedAvatar.body}
               eyes={selectedAvatar.eyes}
@@ -167,9 +148,6 @@ export default function LobbyForm({
               onClick={onNextBody}
               className="arrow arrowleft"
             />
-            {/* <div style={rightArrowStyle} onClick={onNextEyes} />
-            <div style={rightArrowStyle} onClick={onNextMouth} />
-            <div style={rightArrowStyle} onClick={onNextBody} /> */}
           </div>
 
           <div className="dice-container">

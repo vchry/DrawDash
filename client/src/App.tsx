@@ -49,9 +49,15 @@ function App() {
   const [width, setWidth] = useState(5);
   const [activeTool, setActiveTool] = useState<"brush" | "fill">("brush");
 
-  const [selectedAvatar, setSelectedAvatar] = useState<{ body: number; eyes: number; mouth: number }>(() => {
+  const [selectedAvatar, setSelectedAvatar] = useState<{
+    body: number;
+    eyes: number;
+    mouth: number;
+  }>(() => {
     const cachedAvatar = localStorage.getItem("dash_avatar");
-    return cachedAvatar ? JSON.parse(cachedAvatar) : { body: 0, eyes: 0, mouth: 0 };
+    return cachedAvatar
+      ? JSON.parse(cachedAvatar)
+      : { body: 0, eyes: 0, mouth: 0 };
   });
   const previousArtistRef = React.useRef<string | null>(null);
   const previousRoundRef = React.useRef<number>(0);
@@ -359,8 +365,12 @@ function App() {
         />
       ) : roomState ? (
         <div className="game-layout-container">
-          <Topbar roomState={roomState} timer={timer} />
-
+          <Topbar
+            roomState={roomState}
+            timer={timer}
+            isArtist={isArtist}
+            hasGuessed={roomState.correctGuessers?.includes(socket.id) ?? false}
+          />
           <div className="game-workspace-columns">
             <div>
               <ScoreBoard

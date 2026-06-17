@@ -27,13 +27,12 @@ export default function PregameLobby({
   const handleCopyRoomId = () => {
     navigator.clipboard.writeText(roomId);
     setCopied(true);
-    // Reset the "Copied!" visual text back to the Room ID after 2 seconds
     setTimeout(() => setCopied(false), 2000);
   };
 
   return (
     <div className="setting-component">
-      {/* MIDDLE COLUMN: Settings */}
+      {/* Settings list */}
       <div className="settings-list">
         <div className="setting-row">
           <label>
@@ -51,9 +50,10 @@ export default function PregameLobby({
             <option value="10">10</option>
           </select>
         </div>
+
         <div className="setting-row">
           <label>
-            <img src={Drawtime} alt="Player Gif" width={30} /> Drawtime
+            <img src={Drawtime} alt="Drawtime Gif" width={30} /> Drawtime
           </label>
           <select
             value={roomState.roundDuration}
@@ -62,27 +62,19 @@ export default function PregameLobby({
               onSettingChange("roundDuration", Number(e.target.value))
             }
           >
-            <option value="15">15</option>
-            <option value="30">30</option>
-            <option value="45">45</option>
-            <option value="60">60</option>
-            <option value="75">75</option>
-            <option value="90">90</option>
-            <option value="105">105</option>
-            <option value="120">120</option>
-            <option value="135">135</option>
-            <option value="150">150</option>
-            <option value="165">165</option>
-            <option value="180">180</option>
-            <option value="195">195</option>
-            <option value="210">210</option>
-            <option value="225">225</option>
-            <option value="240">240</option>
+            {[15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180, 195, 210, 225, 240].map(
+              (v) => (
+                <option key={v} value={v}>
+                  {v}
+                </option>
+              )
+            )}
           </select>
         </div>
+
         <div className="setting-row">
           <label>
-            <img src={Round} alt="Player Gif" width={30} /> Rounds
+            <img src={Round} alt="Round Gif" width={30} /> Rounds
           </label>
           <select
             value={roomState.totalRounds}
@@ -91,20 +83,17 @@ export default function PregameLobby({
               onSettingChange("totalRounds", Number(e.target.value))
             }
           >
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-            <option value="8">8</option>
-            <option value="9">9</option>
-            <option value="10">10</option>
+            {[2, 3, 4, 5, 6, 7, 8, 9, 10].map((v) => (
+              <option key={v} value={v}>
+                {v}
+              </option>
+            ))}
           </select>
         </div>
+
         <div className="setting-row">
           <label>
-            <img src={WordCount} alt="Player Gif" width={30} /> Word Count
+            <img src={WordCount} alt="Word Count Gif" width={30} /> Word Count
           </label>
           <select
             value={roomState.wordOptionsCount}
@@ -113,21 +102,36 @@ export default function PregameLobby({
               onSettingChange("wordOptionsCount", Number(e.target.value))
             }
           >
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
+            {[2, 3, 4, 5].map((v) => (
+              <option key={v} value={v}>
+                {v}
+              </option>
+            ))}
           </select>
         </div>
+
         <div className="setting-row">
           <label>
-            <img src={Hint} alt="Player Gif" width={30} /> Hints
+            <img src={Hint} alt="Hint Gif" width={30} /> Hints
           </label>
-          <select disabled={!isHost} defaultValue="2">
+          {/*
+            ── Wired to roomState.hints so all clients see the same value ──
+            ── onSettingChange("hints", n) emits to the server like the    ──
+            ── other settings. Topbar reads roomState.hints and caps the   ──
+            ── actual reveals at floor(wordLength / 2) so short words      ──
+            ── never get fully revealed even if hints > letters.           ──
+          */}
+          <select
+            value={(roomState as any).hints ?? 3}
+            disabled={!isHost}
+            onChange={(e) =>
+              onSettingChange("hints", Number(e.target.value))
+            }
+          >
             <option value="0">0</option>
             <option value="1">1</option>
             <option value="2">2</option>
-            <option value="3">3</option>
+            <option value="3" selected>3</option>
             <option value="4">4</option>
             <option value="5">5</option>
           </select>
@@ -145,7 +149,6 @@ export default function PregameLobby({
           </button>
         )}
 
-        {/* UPDATED: Displays the dynamic Room ID text or clipboard verification state */}
         <button
           className="invite-btn"
           onClick={handleCopyRoomId}
@@ -155,19 +158,5 @@ export default function PregameLobby({
         </button>
       </div>
     </div>
-
-    // <div className="chat-column">
-    //   <div className="chat-messages">
-    //     <p className="system-message">
-    //       {players.find((p) => p.id === roomState.hostId)?.username ||
-    //         "Someone"}{" "}
-    //       is now the room owner!
-    //     </p>
-    //   </div>
-    //   <div className="chat-input-wrapper">
-    //     <input type="text" placeholder="Type your guess here..." disabled />
-    //   </div>
-    // </div>
-    // </div>
   );
 }
