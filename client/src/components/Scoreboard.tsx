@@ -69,6 +69,7 @@ export default function Scoreboard({
                   mouth={player.mouth ?? 0}
                   special={isCurrentPlayerHost ? 0 : null}
                   size={45}
+                  className="shadow"
                 />
               </div>
               {/* <span className={`player-name ${player.id === currentUserId ? 'bold' : ''}`}>

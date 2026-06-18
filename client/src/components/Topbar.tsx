@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import type { RoomState } from "../types/game";
 import Clock from "../assets/clock.gif";
 import Setting from "../assets/setting.gif";
+import SettingsPanel from "./Settings";
+import type { HotkeyMap } from "./Settings";
 
 interface TopBarProps {
   roomState: RoomState;
@@ -97,7 +99,6 @@ function WordCells({
         const globalIdx = startIndex + localIdx;
         const hinted = hintedChars[globalIdx];
 
-        // Force display of the real character if showFull/hasGuessed is true
         const display = showFull ? char.toUpperCase() : hinted?.toUpperCase();
 
         const classes = [
@@ -124,19 +125,18 @@ export default function TopBar({
   isArtist,
   hasGuessed,
 }: TopBarProps) {
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
   const currentRound = roomState.currentRound ?? 0;
   const totalRounds = roomState.totalRounds || 3;
-
   const phase = roomState.phase ?? "";
 
-  // Account for all possible naming patterns the backend might pass for the hidden/revealed word string
   const fullWord =
     roomState.currentWord ||
     (roomState as any).revealedWord ||
     (roomState as any).word ||
     "";
 
-  // Instantly trigger full word display if artist, if guessed correctly, or if the round is over
   const isRevealPhase =
     phase === "reveal" || phase === "roundEnd" || phase === "revealWord";
   const showFull = isArtist || hasGuessed || isRevealPhase;
@@ -182,7 +182,6 @@ export default function TopBar({
       return <div className="status-text">CHOOSING WORD...</div>;
     }
 
-    // Keep word display tracking functional across standard drawing phase AND final summary reveals
     if (phase === "drawing" || isRevealPhase) {
       const label = isRevealPhase
         ? "THE WORD WAS:"
@@ -250,25 +249,48 @@ export default function TopBar({
     return <div className="status-text">DRAWING...</div>;
   };
 
+  const handleSettingsSave = (volume: number, hotkeys: HotkeyMap) => {
+    // Wire up to your game logic as needed
+    console.log("Settings saved:", { volume, hotkeys });
+  };
+
   return (
-    <div className="topbar">
-      <div className="timer-round">
-        <div className="timer">
-          <img src={Clock} alt="Clock Icon" width={70} />
-          <span className="time">{timer}</span>
+    <>
+      {/* Settings modal — fixed overlay, renders above everything */}
+      {settingsOpen && (
+        <SettingsPanel
+          onClose={() => setSettingsOpen(false)}
+          onSave={handleSettingsSave}
+        />
+      )}
+
+      <div className="topbar">
+        <div className="timer-round">
+          <div className="timer">
+            <img src={Clock} alt="Clock Icon" width={70} className="shadow" />
+            <span className="time">{timer}</span>
+          </div>
+          <div className="round">
+            <h3 style={{ margin: 0, fontSize: "18px" }}>
+              Round {currentRound} of {totalRounds}
+            </h3>
+          </div>
         </div>
-        <div className="round">
-          <h3 style={{ margin: 0, fontSize: "18px" }}>
-            Round {currentRound} of {totalRounds}
-          </h3>
+
+        <div className="word-area">{renderWordArea()}</div>
+
+        {/* Settings gif — click opens the SettingsPanel modal */}
+        <div className="setting-btn">
+          <img
+            src={Setting}
+            alt="Settings"
+            width={50}
+            className="shadow"
+            onClick={() => setSettingsOpen(true)}
+            style={{ cursor: "pointer" }}
+          />
         </div>
       </div>
-
-      <div className="word-area">{renderWordArea()}</div>
-
-      <div className="setting-btn">
-        <img src={Setting} alt="Setting Icon" width={50} />
-      </div>
-    </div>
+    </>
   );
 }

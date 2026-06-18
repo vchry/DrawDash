@@ -172,14 +172,14 @@ export default function Toolbar({
           onClick={() => isArtist && setActiveTool("fill")}
         >
           <span style={shortcutBadgeStyle}>F</span>
-          <img src={fill} alt="Fill" className="tool-icon fill" />
+          <img src={fill} alt="Fill" className="tool-icon fill shadow" />
         </button>
 
         <button
           style={toolBtnStyle(false)}
           onClick={() => isArtist && onUndo()}
         >
-          <img src={undo} alt="Undo" className="tool-icon Undo" />
+          <img src={undo} alt="Undo" className="tool-icon Undo shadow" />
           <span style={shortcutBadgeStyle}>U</span>
         </button>
 
@@ -187,7 +187,7 @@ export default function Toolbar({
           style={toolBtnStyle(false)}
           onClick={() => isArtist && onClear()}
         >
-          <img src={erase} alt="Undo" className="tool-icon clear" />
+          <img src={erase} alt="Undo" className="tool-icon clear shadow" />
           <span style={shortcutBadgeStyle}>C</span>
         </button>
       </div>

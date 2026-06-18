@@ -36,7 +36,7 @@ export default function PregameLobby({
       <div className="settings-list">
         <div className="setting-row">
           <label>
-            <img src={Players} alt="Player Gif" width={30} /> Players
+            <img src={Players} alt="Player Gif" width={30} className="shadow" /> Players
           </label>
           <select disabled={!isHost} defaultValue="6">
             <option value="2">2</option>
@@ -53,7 +53,7 @@ export default function PregameLobby({
 
         <div className="setting-row">
           <label>
-            <img src={Drawtime} alt="Drawtime Gif" width={30} /> Drawtime
+            <img src={Drawtime} alt="Drawtime Gif" width={30} className="shadow" /> Drawtime
           </label>
           <select
             value={roomState.roundDuration}
@@ -74,7 +74,7 @@ export default function PregameLobby({
 
         <div className="setting-row">
           <label>
-            <img src={Round} alt="Round Gif" width={30} /> Rounds
+            <img src={Round} alt="Round Gif" width={30} className="shadow" /> Rounds
           </label>
           <select
             value={roomState.totalRounds}
@@ -93,7 +93,7 @@ export default function PregameLobby({
 
         <div className="setting-row">
           <label>
-            <img src={WordCount} alt="Word Count Gif" width={30} /> Word Count
+            <img src={WordCount} alt="Word Count Gif" width={30} className="shadow" /> Word Count
           </label>
           <select
             value={roomState.wordOptionsCount}
@@ -112,7 +112,7 @@ export default function PregameLobby({
 
         <div className="setting-row">
           <label>
-            <img src={Hint} alt="Hint Gif" width={30} /> Hints
+            <img src={Hint} alt="Hint Gif" width={30} className="shadow" /> Hints
           </label>
           {/*
             ── Wired to roomState.hints so all clients see the same value ──
