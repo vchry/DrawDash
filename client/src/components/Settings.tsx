@@ -20,12 +20,22 @@ const DEFAULT_HOTKEYS: HotkeyMap = {
 
 interface SettingsPanelProps {
   onClose?: () => void;
-  onSave?: (volume: number, hotkeys: HotkeyMap) => void;
 }
 
-const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onSave }) => {
-  const [volume, setVolume] = useState<number>(100);
-  const [hotkeys, setHotkeys] = useState<HotkeyMap>({ ...DEFAULT_HOTKEYS });
+const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
+  const [volume, setVolume] = useState<number>(() => {
+    const saved = localStorage.getItem("volume");
+    return saved ? Number(saved) : 100;
+  });
+  const [hotkeys, setHotkeys] = useState<HotkeyMap>(() => {
+    const saved = localStorage.getItem("hotkeys");
+
+    if (saved) {
+      return JSON.parse(saved);
+    }
+
+    return { ...DEFAULT_HOTKEYS };
+  });
   const [listening, setListening] = useState<keyof HotkeyMap | null>(null);
 
   const sliderBackground = `linear-gradient(to right, rgba(255,255,255,0.85) ${volume}%, rgba(255,255,255,0.15) ${volume}%)`;
@@ -37,6 +47,10 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onSave }) => {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (!listening) return;
+
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+
       e.preventDefault();
 
       const key = e.key.toUpperCase();
@@ -46,9 +60,36 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onSave }) => {
         return;
       }
 
-      const validFKeys = ['F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12'];
-      if (key.length === 1 || validFKeys.includes(key)) {
-        setHotkeys(prev => ({ ...prev, [listening]: key }));
+      if (/^[A-Z]$/.test(key)) {
+        setHotkeys(prev => {
+          const alreadyUsed = Object.entries(prev).some(
+            ([action, value]) =>
+              action !== listening && value === key
+          );
+
+          if (alreadyUsed) {
+            alert(`"${key}" is already assigned.`);
+            return prev;
+          }
+
+          const updated = {
+            ...prev,
+            [listening]: key,
+          };
+
+          localStorage.setItem(
+            "hotkeys",
+            JSON.stringify(updated)
+          );
+
+          window.dispatchEvent(
+            new CustomEvent("hotkeys-changed", {
+              detail: updated,
+            })
+          );
+
+          return updated;
+        });
         setListening(null);
       }
     },
@@ -62,16 +103,28 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onSave }) => {
 
   const handleReset = () => {
     setHotkeys({ ...DEFAULT_HOTKEYS });
+
+    localStorage.setItem(
+      "hotkeys",
+      JSON.stringify(DEFAULT_HOTKEYS)
+    );
+    window.dispatchEvent(
+      new CustomEvent("hotkeys-changed", {
+        detail: DEFAULT_HOTKEYS,
+      })
+    );
+
     setListening(null);
   };
 
-  const handleSave = () => {
-    onSave?.(volume, hotkeys);
+  const handleClose = () => {
     onClose?.();
   };
 
-  const handleCancel = () => {
-    onClose?.();
+  const handleVolumeChange = (newVolume: number) => {
+    setVolume(newVolume);
+
+    localStorage.setItem("volume", String(newVolume));
   };
 
   return (
@@ -83,7 +136,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onSave }) => {
         {/* Close */}
         <button
           className="settings-panel__close"
-          onClick={handleCancel}
+          onClick={handleClose}
           aria-label="Close settings"
         >
           ✕
@@ -105,7 +158,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onSave }) => {
               max={100}
               step={1}
               value={volume}
-              onChange={e => setVolume(Number(e.target.value))}
+              onChange={e => handleVolumeChange(Number(e.target.value))}
               style={{ background: sliderBackground }}
               aria-label="Volume"
             />
@@ -153,16 +206,6 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onSave }) => {
               />
             </div>
           ))}
-        </div>
-
-        {/* Footer */}
-        <div className="settings-panel__footer">
-          <button className="settings-panel__btn-secondary" onClick={handleCancel}>
-            Cancel
-          </button>
-          <button className="settings-panel__btn-primary" onClick={handleSave}>
-            Save
-          </button>
         </div>
       </div>
     </div>

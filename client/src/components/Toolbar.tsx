@@ -56,6 +56,41 @@ export default function Toolbar({
   onUndo,
   onClear,
 }: ToolbarProps) {
+  const [hotkeys, setHotkeys] = React.useState(() => {
+    const saved = localStorage.getItem("hotkeys");
+
+    if (saved) {
+      return JSON.parse(saved);
+    }
+
+    return {
+      Brush: "B",
+      Fill: "F",
+      Undo: "U",
+      Clear: "C",
+      Swap: "S",
+    };
+  });
+
+  React.useEffect(() => {
+    const handleHotkeysChanged = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      setHotkeys(customEvent.detail);
+    };
+
+    window.addEventListener(
+      "hotkeys-changed",
+      handleHotkeysChanged
+    );
+
+    return () => {
+      window.removeEventListener(
+        "hotkeys-changed",
+        handleHotkeysChanged
+      );
+    };
+  }, []);
+
   const toolBtnStyle = (isActive: boolean) => ({
     position: "relative" as const,
     width: "40px",
@@ -163,7 +198,7 @@ export default function Toolbar({
             onClick={handleClick}
             style={{ cursor: "pointer" }}
           /> */}
-          <span style={shortcutBadgeStyle}>B</span>
+          <span style={shortcutBadgeStyle}>{hotkeys.Brush}</span>
           🖌️
         </button>
 
@@ -171,7 +206,7 @@ export default function Toolbar({
           style={toolBtnStyle(activeTool === "fill")}
           onClick={() => isArtist && setActiveTool("fill")}
         >
-          <span style={shortcutBadgeStyle}>F</span>
+          <span style={shortcutBadgeStyle}>{hotkeys.Fill}</span>
           <img src={fill} alt="Fill" className="tool-icon fill shadow" />
         </button>
 
@@ -180,7 +215,7 @@ export default function Toolbar({
           onClick={() => isArtist && onUndo()}
         >
           <img src={undo} alt="Undo" className="tool-icon Undo shadow" />
-          <span style={shortcutBadgeStyle}>U</span>
+          <span style={shortcutBadgeStyle}>{hotkeys.Undo}</span>
         </button>
 
         <button
@@ -188,7 +223,7 @@ export default function Toolbar({
           onClick={() => isArtist && onClear()}
         >
           <img src={erase} alt="Undo" className="tool-icon clear shadow" />
-          <span style={shortcutBadgeStyle}>C</span>
+          <span style={shortcutBadgeStyle}>{hotkeys.Clear}</span>
         </button>
       </div>
     </div>

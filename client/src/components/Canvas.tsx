@@ -40,10 +40,50 @@ export default function Canvas({
 
   const [isDrawing, setIsDrawing] = useState(false);
   const [history, setHistory] = useState<string[]>([]);
+  const [hotkeys, setHotkeys] = useState(() => {
+    const saved = localStorage.getItem("hotkeys");
+
+    if (saved) {
+      return JSON.parse(saved);
+    }
+
+    return {
+      Brush: "B",
+      Fill: "F",
+      Undo: "U",
+      Clear: "C",
+      Swap: "S",
+    };
+  });
+
+  useEffect(() => {
+    const handleHotkeysChanged = (event: Event) => {
+      const customEvent = event as CustomEvent;
+
+      setHotkeys(customEvent.detail);
+    };
+
+    window.addEventListener(
+      "hotkeys-changed",
+      handleHotkeysChanged
+    );
+
+    return () => {
+      window.removeEventListener(
+        "hotkeys-changed",
+        handleHotkeysChanged
+      );
+    };
+  }, []);
 
   // -------------------------
   // Sockets, Hotkeys & Toolbar Listeners
   // -------------------------
+
+  useEffect(() => {
+    console.log("Loaded hotkeys:", hotkeys);
+  }, [hotkeys]);
+
   useEffect(() => {
     socket.on("draw_received", (data: DrawLineData) => {
       drawLine(data.prevPoint, data.currentPoint, data.color, data.width);
@@ -79,18 +119,31 @@ export default function Canvas({
   // Handle hotkeys
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      console.log("Canvas key:", e.key);
+      console.log("Current hotkeys:", hotkeys);
       if (!isArtist) return;
       const key = e.key.toLowerCase();
 
-      if (key === "b") setActiveTool("brush");
-      if (key === "f") setActiveTool("fill");
-      if (key === "u") handleUndo();
-      if (key === "c") requestClearCanvas();
+      if (key === hotkeys.Brush.toLowerCase()) {
+        setActiveTool("brush");
+      }
+
+      if (key === hotkeys.Fill.toLowerCase()) {
+        setActiveTool("fill");
+      }
+
+      if (key === hotkeys.Undo.toLowerCase()) {
+        handleUndo();
+      }
+
+      if (key === hotkeys.Clear.toLowerCase()) {
+        requestClearCanvas();
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isArtist, history, setActiveTool]);
+  }, [isArtist, history, setActiveTool, hotkeys]);
 
   // Handle scrolling to change brush size
   useEffect(() => {
@@ -293,8 +346,19 @@ export default function Canvas({
     if (activeTool === "fill" && canvasRef.current) {
       const x = Math.floor(coords.x);
       const y = Math.floor(coords.y);
+
       runFloodFill(canvasRef.current, x, y, color);
-      socket.emit("fill", { roomId, x, y, color });
+
+      socket.emit("fill", {
+        roomId,
+        x,
+        y,
+        color,
+      });
+
+      // Automatically go back to brush
+      setActiveTool("brush");
+
       return;
     }
 
@@ -315,7 +379,7 @@ export default function Canvas({
       const coords = getRelativeCoords(e);
       setIsDrawing(true);
       prevPoint.current = coords;
-      
+
       drawLine(null, coords, color, width);
       socket.emit("draw", {
         roomId,

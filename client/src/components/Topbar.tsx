@@ -3,7 +3,6 @@ import type { RoomState } from "../types/game";
 import Clock from "../assets/clock.gif";
 import Setting from "../assets/setting.gif";
 import SettingsPanel from "./Settings";
-import type { HotkeyMap } from "./Settings";
 
 interface TopBarProps {
   roomState: RoomState;
@@ -249,10 +248,6 @@ export default function TopBar({
     return <div className="status-text">DRAWING...</div>;
   };
 
-  const handleSettingsSave = (volume: number, hotkeys: HotkeyMap) => {
-    // Wire up to your game logic as needed
-    console.log("Settings saved:", { volume, hotkeys });
-  };
 
   return (
     <>
@@ -260,7 +255,6 @@ export default function TopBar({
       {settingsOpen && (
         <SettingsPanel
           onClose={() => setSettingsOpen(false)}
-          onSave={handleSettingsSave}
         />
       )}
 
