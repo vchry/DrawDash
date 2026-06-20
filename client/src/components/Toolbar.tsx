@@ -3,6 +3,7 @@ import React from "react";
 import fill from "../assets/fill.gif";
 import erase from "../assets/erase.gif";
 import undo from "../assets/undo.gif";
+import brush from "../assets/logo-logo.gif";
 
 interface ToolbarProps {
   isArtist: boolean;
@@ -91,21 +92,32 @@ export default function Toolbar({
     >
       {/* Left: Colors */}
       <div style={{ display: "flex", gap: "8px" }}>
-        {/* Current Color Preview */}
+        {/* Current Color Preview with modern diagonal separation style */}
         <div
           style={{
             width: "40px",
             height: "40px",
             background: color,
             border: "2px solid #a3a3a3",
-            borderRadius: "4px",
+            borderRadius: "6px",
           }}
         />
 
-        {/* Color Grid */}
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        {/* Outer Roundy Borderless Color Grid Wrapper */}
+        <div 
+          style={{ 
+            display: "flex", 
+            flexDirection: "column", 
+            borderRadius: "6px",
+            overflow: "hidden",
+            border: "1px solid #555" // Clean minimal boundary framing line matching picture layout
+          }}
+        >
           {COLORS.map((row, rowIndex) => (
-            <div key={rowIndex} style={{ display: "flex" }}>
+            <div
+              key={rowIndex}
+              style={{ display: "flex" }}
+            >
               {row.map((c) => (
                 <div
                   key={c}
@@ -115,8 +127,7 @@ export default function Toolbar({
                     height: "20px",
                     background: c,
                     cursor: isArtist ? "pointer" : "not-allowed",
-                    borderRight: "1px solid #000",
-                    borderBottom: "1px solid #000",
+                    border: "none" // Removed black separator borders perfectly matching preview graphic style layout
                   }}
                 />
               ))}
@@ -157,14 +168,8 @@ export default function Toolbar({
           style={toolBtnStyle(activeTool === "brush")}
           onClick={() => isArtist && setActiveTool("brush")}
         >
-          {/* <img
-            src={diceGif}
-            alt="Dice"
-            onClick={handleClick}
-            style={{ cursor: "pointer" }}
-          /> */}
           <span style={shortcutBadgeStyle}>B</span>
-          🖌️
+          <img src={brush} alt="Fill" className="tool-icon fill shadow" />
         </button>
 
         <button

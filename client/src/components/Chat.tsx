@@ -12,7 +12,7 @@ interface Message {
   text: string;
   isCorrect?: boolean;
   type?:
-    | "artist-chat"
+    | "guesser-pool-chat" // Unified path type replacing individual channels
     | "is-drawing"
     | "joined"
     | "left"
@@ -64,17 +64,31 @@ export default function Chat({ socket, roomId, username }: ChatProps) {
 
           return (
             <div key={index} className={`chat-message-row${classModifier}`}>
-              {!isSystem && msg.type !== "artist-chat" ? (
+              {/* System messages render cleanly as full standalone block alerts */}
+              {isSystem ? (
+                <span>{msg.text}</span>
+              ) : (
+                /* Normal chat view and Guesser Pool chats now use the exact same standard format */
                 <>
                   <span className="chat-sender-name">{msg.sender}: </span>
                   <span>{msg.text}</span>
                 </>
-              ) : (
-                /* System and private artist messages render cleanly as single block texts */
-                <span>{msg.text}</span>
               )}
             </div>
           );
+          // return (
+          //   <div key={index} className={`chat-message-row${classModifier}`}>
+          //     {!isSystem && msg.type !== "artist-chat" ? (
+          //       <>
+          //         <span className="chat-sender-name">{msg.sender}: </span>
+          //         <span>{msg.text}</span>
+          //       </>
+          //     ) : (
+          //       /* System and private artist messages render cleanly as single block texts */
+          //       <span>{msg.text}</span>
+          //     )}
+          //   </div>
+          // );
         })}
         <div ref={chatEndRef} />
       </div>
@@ -94,9 +108,9 @@ export default function Chat({ socket, roomId, username }: ChatProps) {
           <span className="chat-char-count">{inputValue.length}</span>
         </div>
 
-  <button type="submit" className="chat-submit-btn">
-    Send
-  </button>
+        <button type="submit" className="chat-submit-btn">
+          Send
+        </button>
       </form>
     </div>
   );
