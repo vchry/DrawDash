@@ -21,10 +21,10 @@ import Footer from "./components/Footer";
 import RoundResult from "./components/RoundResult";
 import GameOverWinners from "./components/GameOverWinners";
 
+import { playSound } from "./utils/SoundManager";
 const socket: Socket = io("http://localhost:3001");
 
 function App() {
-  // FIXED: Cleaned up the destructuring syntax error here
   const [username, setUsername] = useState<string>(() => {
     return localStorage.getItem("dash_username") || "";
   });
@@ -61,7 +61,7 @@ function App() {
   });
   const previousArtistRef = React.useRef<string | null>(null);
   const previousRoundRef = React.useRef<number>(0);
-
+  
   // State to track which specific hero avatar is currently playing its pop animation
   const [animatingAvatarIndex, setAnimatingAvatarIndex] = useState<
     number | null
@@ -75,7 +75,6 @@ function App() {
   const triggerClear = () => {
     window.dispatchEvent(new CustomEvent("canvas-clear"));
   };
-
   const onPrevBody = () =>
     setSelectedAvatar((a) => ({ ...a, body: (a.body + 7) % 8 }));
   const onNextBody = () =>
@@ -88,7 +87,6 @@ function App() {
     setSelectedAvatar((a) => ({ ...a, mouth: (a.mouth + 7) % 8 }));
   const onNextMouth = () =>
     setSelectedAvatar((a) => ({ ...a, mouth: (a.mouth + 1) % 8 }));
-
   const onRandomize = () => {
     setSelectedAvatar({
       body: Math.floor(Math.random() * 8),
@@ -135,6 +133,10 @@ function App() {
       }
     });
 
+    socket.on("play_sound", ({ sound }: { sound: string }) => {
+      playSound(sound);
+    });
+
     return () => {
       socket.off("room_state_update");
       socket.off("timer_tick");
@@ -142,6 +144,7 @@ function App() {
       socket.off("word_selection_confirmed");
       socket.off("round_end");
       socket.off("game_over");
+      socket.off("play_sound");
     };
   }, []);
 
@@ -174,7 +177,6 @@ function App() {
         previousRoundRef.current = currentRoundNumber;
 
         if (currentArtistId === socket.id) {
-          // Dynamic Fix: Word Count options display count controlled by lobby state choice
           const dynamicCount = roomState.wordOptionsCount || 3;
           setWordOptions(getRandomWordsFromAll(dynamicCount));
         } else {
@@ -199,7 +201,6 @@ function App() {
     if (!username.trim()) return;
 
     socket.emit("create_room", { username, avatar: selectedAvatar });
-
     socket.once("room_created", (data: { roomId: string }) => {
       setRoomId(data.roomId);
       setIsJoined(true);
@@ -209,14 +210,12 @@ function App() {
   const handleJoinRoom = (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !roomId.trim()) return;
-
     socket.emit("join_room", { roomId, username, avatar: selectedAvatar });
 
     socket.once("join_failed", (data: { reason?: string }) => {
       setRoomError(data?.reason || "Invalid Room ID");
       setTimeout(() => setRoomError(""), 3000);
     });
-
     socket.once("join_success", (data: { roomId: string }) => {
       setRoomId(data.roomId);
       setIsJoined(true);
@@ -255,7 +254,6 @@ function App() {
   const isArtist = roomState?.currentArtist === socket.id;
   const currentRound = roomState?.currentRound || 1;
   const totalRounds = roomState?.totalRounds || 3;
-
   const SPRITE_SIZE = 100;
 
   const getSpritePosition = (col: number, row: number) => ({
@@ -302,7 +300,7 @@ function App() {
     setAnimatingAvatarIndex(clickedIndex);
     setTimeout(() => {
       setAnimatingAvatarIndex(null);
-    }, 250); // Match animation configuration lifespan duration
+    }, 250);
   };
 
   useEffect(() => {
@@ -314,7 +312,6 @@ function App() {
   }, [selectedAvatar]);
 
   const currentPlayer = players.find((p) => p.id === roomState?.currentArtist);
-
   const isRoundResultActive = !!roundResult;
   const isGameOverActive = gameOverWinners && gameOverWinners.length > 0;
   const isOverlayActive = isRoundResultActive || isGameOverActive;
@@ -414,7 +411,6 @@ function App() {
             <div
               className={`middle-section ${roomState.gameStarted && !showPhaseSequence ? "canvas-mode" : ""}`}
             >
-              {/* Sequential Gating Fixed: prioritized round display sequence timeline accurately */}
               {isRoundResultActive ? (
                 <RoundResult
                   reason={roundResult.reason}

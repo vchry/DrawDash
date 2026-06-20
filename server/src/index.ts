@@ -13,7 +13,6 @@ const io = new Server(server, {
     methods: ["GET", "POST"],
   },
 });
-
 const PORT = process.env.PORT || 3001;
 
 const WORD_BANK = [
@@ -72,14 +71,17 @@ const generateRoomId = (): string => {
   return roomId;
 };
 
+// Global audio broadcasting helper
+const emitSound = (roomId: string, sound: string) => {
+  io.to(roomId).emit("play_sound", { sound });
+};
+
 // HELPER: Calculates and awards points to the artist (MAX 58)
 const awardArtistPoints = (room: RoomState) => {
   if (!room.currentArtist || room.correctGuessers.length === 0) return;
-
   const totalGuessersNeeded = room.players.length - 1;
   if (totalGuessersNeeded <= 0) return;
-
-  // 1. Calculate total points earned by guessers this round
+  
   let totalGuesserPointsThisRound = 0;
   room.correctGuessers.forEach((id) => {
     const p = room.players.find((player) => player.id === id);
@@ -88,18 +90,13 @@ const awardArtistPoints = (room: RoomState) => {
       totalGuesserPointsThisRound += p.score - before;
     }
   });
-
-  // 2. Compute the average score of the guessers
+  
   const avgGuesserScore =
     totalGuesserPointsThisRound / room.correctGuessers.length;
-
-  // 3. Determine performance ratios (Speed factor out of max player score 325)
   const speedRatio = avgGuesserScore / 325;
   const completionRatio = room.correctGuessers.length / totalGuessersNeeded;
 
-  // 4. Scale artist score out of absolute MAX 58
   const finalArtistScore = Math.floor(58 * speedRatio * completionRatio);
-
   const artist = room.players.find((p) => p.id === room.currentArtist);
   if (artist) {
     artist.score += finalArtistScore;
@@ -137,7 +134,6 @@ const startTurn = (roomId: string) => {
       }));
 
     io.to(roomId).emit("game_over", { winners: top });
-
     room.gameStarted = false;
     room.currentArtist = null;
     room.phase = "selecting";
@@ -150,7 +146,6 @@ const startTurn = (roomId: string) => {
       clearInterval(activeRooms[`interval_${roomId}`]);
     if (activeRooms[`selection_${roomId}`])
       clearInterval(activeRooms[`selection_${roomId}`]);
-
     io.to(roomId).emit("room_state_update", room);
     return;
   }
@@ -216,6 +211,7 @@ const startDrawingRound = (roomId: string, chosenWord: string) => {
 
   io.to(roomId).emit("room_state_update", room);
   io.to(roomId).emit("word_selection_confirmed", { word: chosenWord });
+  emitSound(roomId, "start_drawing");
 
   const artistPlayer = room.players.find((p) => p.id === room.currentArtist);
   io.to(roomId).emit("chat_message", {
@@ -234,10 +230,13 @@ const startDrawingRound = (roomId: string, chosenWord: string) => {
     activeRoom.timeLeft -= 1;
     io.to(roomId).emit("timer_tick", activeRoom.timeLeft);
 
+    if (activeRoom.timeLeft === 10) {
+      emitSound(roomId, "timer");
+    }
+
     if (activeRoom.timeLeft <= 0) {
       clearInterval(activeRooms[`interval_${roomId}`]);
 
-      // Award points to the artist based on final round stats
       awardArtistPoints(activeRoom);
 
       const deltas = activeRoom.players.map((p) => {
@@ -258,13 +257,12 @@ const startDrawingRound = (roomId: string, chosenWord: string) => {
         text: `The word was '${activeRoom.currentWord}'`,
         type: "word-reveal",
       });
-
       io.to(roomId).emit("round_end", {
         reason: "time_up",
         word: activeRoom.currentWord,
         players: deltas,
       });
-
+      emitSound(roomId, "round_over");
       startTurn(roomId);
     }
   }, 1000);
@@ -330,7 +328,6 @@ io.on("connection", (socket) => {
         phase: "selecting",
         correctGuessers: [],
       };
-
       const room = activeRooms[roomId] as RoomState;
 
       room.players.push({
@@ -341,16 +338,15 @@ io.on("connection", (socket) => {
         eyes: avatar?.eyes ?? 0,
         mouth: avatar?.mouth ?? 0,
       });
-
       console.log(`🏗️  Room created: ${roomId} by ${username}`);
       socket.emit("room_created", { roomId });
       io.to(roomId).emit("room_state_update", room);
-
       io.to(roomId).emit("chat_message", {
         sender: "System",
         text: `${username} created the room!`,
         isCorrect: false,
       });
+      emitSound(roomId, "player_join");
     },
   );
 
@@ -396,12 +392,12 @@ io.on("connection", (socket) => {
       console.log(`👤 ${username} joined room: ${roomId}`);
       socket.emit("join_success", { roomId });
       io.to(roomId).emit("room_state_update", room);
-
       io.to(roomId).emit("chat_message", {
         sender: "System",
         text: `${username} join the room!`,
         type: "joined",
       });
+      emitSound(roomId, "player_join");
     },
   );
 
@@ -500,8 +496,6 @@ io.on("connection", (socket) => {
 
         room.correctGuessers.push(socket.id);
         const player = room.players.find((p) => p.id === socket.id);
-
-        // NEW: Player scoring logic scaled with an absolute MAX of 325 and MIN of 50
         if (player) {
           const timeRatio = room.timeLeft / room.roundDuration;
           const earnedPoints = Math.floor(timeRatio * 275) + 50;
@@ -513,7 +507,7 @@ io.on("connection", (socket) => {
           text: `${username} guess the word!`,
           type: "correct-guess",
         });
-
+        emitSound(roomId, "correct_guess");
         io.to(roomId).emit("room_state_update", room);
 
         const totalGuessersNeeded = room.players.length - 1;
@@ -525,15 +519,12 @@ io.on("connection", (socket) => {
             clearInterval(activeRooms[`interval_${roomId}`]);
           }
 
-          // Award points to artist when everyone guesses correctly before time is up
           awardArtistPoints(room);
-
           io.to(roomId).emit("chat_message", {
             sender: "System",
             text: `The word was '${room.currentWord}'`,
             type: "word-reveal",
           });
-
           const deltas = room.players.map((p) => {
             const before = room.scoresBeforeRound?.[p.id] ?? 0;
             return {
@@ -546,13 +537,12 @@ io.on("connection", (socket) => {
               mouth: p.mouth,
             };
           });
-
           io.to(roomId).emit("round_end", {
             reason: "everyone_guessed",
             word: room.currentWord,
             players: deltas,
           });
-
+          emitSound(roomId, "round_over");
           startTurn(roomId);
         }
       } else {
@@ -583,6 +573,7 @@ io.on("connection", (socket) => {
           text: `${leavingPlayer.username} left the room!`,
           type: "left",
         });
+        emitSound(roomId, "player_left");
       }
       room.players = room.players.filter((p) => p.id !== socket.id);
       room.correctGuessers = room.correctGuessers.filter(
