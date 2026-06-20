@@ -414,6 +414,9 @@
   gap: 8px;
 }
 
+
+
+
 .player-card {
   background-color: white;
   border-radius: 2px;
@@ -421,10 +424,10 @@
   align-items: center;
   padding: 0px;
   height: 42px;
-  min-width: 200px;
+  width: 200px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   font-family: "Varela Round", sans-serif !important;
-  margin-bottom: 7px;
+  margin-bottom: 5px;
 }
 
 .player-rank {
@@ -464,6 +467,16 @@
   font-family: "Varela Round", sans-serif !important;
   font-weight: 500;
 }
+
+.logo-logo{
+  object-fit: contain;
+  margin-right: -15px;
+  height: 38px;
+}
+
+/* .player-card.correct-guesser {
+  
+} */
 
 /* Middle Column: Settings */
 .setting-component {
@@ -765,9 +778,20 @@
    ========================================================================== */
 
 /* Artist private chat message row */
-.chat-message-row.msg-artist-chat {
+/* .chat-message-row.msg-artist-chat {
   color: olive !important;
   font-weight: 500;
+} */
+
+/* Custom styling for the exclusive Artist & Guessers chat stream */
+.chat-message-row.msg-guesser-pool-chat {
+  color: olive !important;
+  font-weight: 500;
+}
+
+/* Optional: Ensures the sender name prefix matches the color styling theme perfectly */
+.chat-message-row.msg-guesser-pool-chat .chat-sender-name {
+  color: olive !important;
 }
 
 /* {username} is drawing now! */

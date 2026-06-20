@@ -1,5 +1,6 @@
 import type { Player, RoomState } from "../types/game";
 import Avatar from "./Avatar";
+import drawingGif from "../assets/logo-logo.gif";
 
 interface ScoreboardProps {
   players: Player[];
@@ -16,6 +17,8 @@ export default function Scoreboard({
     (a, b) => (b.score || 0) - (a.score || 0),
   );
 
+  const isGameStarted = !!roomState?.currentArtist;
+
   return (
     <div className="sidebar">
       <ul className="player-list">
@@ -28,14 +31,12 @@ export default function Scoreboard({
           return (
             <li
               key={player.id}
-              className="player-card"
+              className={`player-card ${hasGuessedCorrectly ? "correct-guesser" : ""}`}
               style={{
-                borderLeft: hasGuessedCorrectly
-                  ? "5px solid #28a745"
-                  : isCurrentArtist
-                    ? "5px solid #ffc107"
-                    : "1px solid #dee2e6",
-                background: hasGuessedCorrectly ? "#e2f0d9" : "#fff",
+                /* Removed borderLeft properties entirely */
+                border: "1px solid #dee2e6", 
+                /* Clean background switch: green if correct, otherwise white */
+                background: hasGuessedCorrectly ? "#D4F8CB" : "#fff",
               }}
             >
               <div className="player-rank">#{index + 1}</div>
@@ -50,33 +51,35 @@ export default function Scoreboard({
                 }}
               >
                 <span
-                  className={`player-name ${player.id === currentUserId ? "bold" : ""} ${isCurrentPlayerHost ? "host-name" : ""}`}
+                  className={`player-name ${player.id === currentUserId ? "bold" : ""}`}
                 >
-                  {/* {isCurrentArtist
-                    ? "🖌️ "
-                    : hasGuessedCorrectly
-                      ? "✅ "
-                      : "🟢 "} */}
                   {player.username} {player.id === currentUserId ? "(You)" : ""}
                 </span>
                 <span className="player-score">{player.score || 0} Points</span>
               </div>
-              {/* Dynamic Sprite Avatar Component */}
-              <div className="player-avatar-container">
+
+              {/* Drawing Indicator & Avatar Container */}
+              <div
+                className="player-avatar-container"
+                style={{ display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                {isCurrentArtist && (
+                  <img
+                    src={drawingGif}
+                    alt="Drawing indicator"
+                    className="logo-logo"
+                  />
+                )}
+
                 <Avatar
                   body={player.body ?? 0}
                   eyes={player.eyes ?? 0}
                   mouth={player.mouth ?? 0}
-                  special={isCurrentPlayerHost ? 0 : null}
+                  special={isCurrentPlayerHost && !isGameStarted ? 0 : null}
                   size={45}
                   className="shadow"
                 />
               </div>
-              {/* <span className={`player-name ${player.id === currentUserId ? 'bold' : ''}`}>
-                {isCurrentArtist ? '🖌️ ' : hasGuessedCorrectly ? '✅ ' : '🟢 '}
-                {player.username} {player.id === currentUserId ? '(You)' : ''}
-              </span>
-              <span className="player-score">Score: {player.score}</span> */}
             </li>
           );
         })}
