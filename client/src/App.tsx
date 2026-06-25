@@ -318,7 +318,7 @@ function App() {
   const canDraw = isArtist && !isOverlayActive;
 
   return (
-    <div className="game-container">
+    <div className={isJoined ? "join-game-container" : "game-container"}>
       <div className={isJoined ? "header-left" : "header"}>
         <div className="logo-container">
           <img
