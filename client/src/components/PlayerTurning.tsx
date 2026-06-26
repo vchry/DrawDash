@@ -38,7 +38,7 @@ export default function PlayerTurning({
   }, [isExiting, onComplete]);
 
   return (
-    <div className={`player-turning ${isExiting ? "slide-out" : "slide-in"}`}>
+    <div className={`sml-phase player-turning ${isExiting ? "slide-out" : "slide-in"}`}>
       <div className="player-turning-content">
         <h2>{player.username} is choosing a word!</h2>
         <div className="player-avatar-large">

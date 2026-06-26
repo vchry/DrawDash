@@ -63,16 +63,10 @@ export default function Canvas({
       setHotkeys(customEvent.detail);
     };
 
-    window.addEventListener(
-      "hotkeys-changed",
-      handleHotkeysChanged
-    );
+    window.addEventListener("hotkeys-changed", handleHotkeysChanged);
 
     return () => {
-      window.removeEventListener(
-        "hotkeys-changed",
-        handleHotkeysChanged
-      );
+      window.removeEventListener("hotkeys-changed", handleHotkeysChanged);
     };
   }, []);
 
@@ -336,10 +330,16 @@ export default function Canvas({
   };
 
   // -------------------------
-  // Pointer & Mouse Events
+  // Pointer Events (Uniform Touch & Mouse)
   // -------------------------
-  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isArtist) return;
+    
+    // Prevents mobile view scrolling/bouncing gestures while drawing
+    if (e.pointerType === "touch") {
+      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    }
+
     const coords = getRelativeCoords(e);
     saveHistory();
 
@@ -358,7 +358,6 @@ export default function Canvas({
 
       // Automatically go back to brush
       setActiveTool("brush");
-
       return;
     }
 
@@ -372,25 +371,10 @@ export default function Canvas({
     });
   };
 
-  const handleMouseEnter = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isArtist || activeTool === "fill") return;
 
-    if (e.buttons === 1) {
-      const coords = getRelativeCoords(e);
-      setIsDrawing(true);
-      prevPoint.current = coords;
-
-      drawLine(null, coords, color, width);
-      socket.emit("draw", {
-        roomId,
-        data: { prevPoint: null, currentPoint: coords, color, width },
-      });
-    }
-  };
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isArtist || activeTool === "fill") return;
-
+    // buttons === 1 ensures pointer/mouse/finger is actively held down down
     if (e.buttons !== 1) {
       if (isDrawing) {
         setIsDrawing(false);
@@ -425,18 +409,27 @@ export default function Canvas({
     prevPoint.current = currentPoint;
   };
 
-  const handleMouseUpOrLeave = () => {
+  const handlePointerUpOrLeave = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (e.pointerType === "touch") {
+      (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+    }
     setIsDrawing(false);
     prevPoint.current = null;
   };
 
-  const getRelativeCoords = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  // Maps physical viewport dimensions back to internal 800x580 canvas logic spaces
+  const getRelativeCoords = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
+    
     const rect = canvas.getBoundingClientRect();
+    
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
     return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY,
     };
   };
 
@@ -445,22 +438,28 @@ export default function Canvas({
       ref={canvasRef}
       width={800}
       height={580}
-      onMouseDown={handleMouseDown}
-      onMouseEnter={handleMouseEnter}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUpOrLeave}
-      onMouseLeave={handleMouseUpOrLeave}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUpOrLeave}
+      onPointerLeave={handlePointerUpOrLeave}
       style={{
         background: "#fff",
-        margin: 0,
+        margin: "0 auto",
         padding: 0,
         borderRadius: "3px",
+        // CSS allows resizing down to 100vw while keeping aspect proportions perfectly uniform
+        width: "100vw",
+        maxWidth: "800px",
+        height: "auto",
+        aspectRatio: "800 / 580",
+        touchAction: "none", // Critical: prevents phone pull-to-refresh or panning while drawing
         cursor: isArtist
           ? activeTool === "fill"
             ? "url(bucket-cursor.png), crosshair"
             : "crosshair"
           : "not-allowed",
         display: "block",
+        boxSizing: "border-box",
       }}
     />
   );

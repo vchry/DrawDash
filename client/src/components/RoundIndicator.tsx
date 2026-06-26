@@ -27,7 +27,7 @@ export default function RoundIndicator({
   }, [duration, onComplete]);
 
   return (
-    <div className={`round-indicator ${isExiting ? "slide-out" : "slide-in"}`}>
+    <div className={`sml-phase round-indicator ${isExiting ? "slide-out" : "slide-in"}`}>
       <div className="round-content">
         <h1>Round {currentRound}</h1>
       </div>

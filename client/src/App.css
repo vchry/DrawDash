@@ -1906,6 +1906,100 @@
   background: #3366ee;
 }
 
+
+
+
+/* Toolbar.css */
+
+.responsive-toolbar {
+  display: flex;
+  width: 100%;
+  max-width: 800px;
+  margin: 8px auto 0;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  padding: 0 4px;
+}
+
+.color-section-wrapper {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.current-color-preview {
+  width: 40px;
+  height: 40px;
+  border: 2px solid #a3a3a3;
+  border-radius: 6px;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.color-grid-container {
+  display: flex;
+  flex-direction: column;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #555;
+}
+
+.color-swatch {
+  width: 20px;
+  height: 20px;
+  border: none;
+}
+
+.size-picker-btn {
+  width: 40px;
+  height: 40px;
+  background: #fff;
+  border: 2px solid #a3a3a3;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.tools-group {
+  display: flex;
+  gap: 6px;
+}
+
+.tool-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border: 2px solid #a3a3a3;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.tool-badge {
+  position: absolute;
+  top: 1px;
+  left: 2px;
+  font-size: 9px;
+  font-weight: bold;
+  color: #333;
+  line-height: 1;
+}
+
+.tool-btn img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+
+
+
 /* Tablets */
 @media (max-width: 1024px) {
   .hero-avatar {
@@ -1955,10 +2049,8 @@
   .topbar {
     width: 100vw;
     margin-top: -10px;
+    height: 4.5vh;
   }
-
-  
-
 
   .hero-avatar {
     transform: scale(0.5);
@@ -2018,5 +2110,222 @@
 
   .header {
     margin-top: 30px;
+  }
+
+  .game-layout-container {
+    padding-bottom: 0px; /* room so content isn't hidden behind fixed chat input */
+  }
+
+  .game-workspace-columns {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 0;
+    margin-top: 0;
+  }
+
+  .middle-section {
+    order: 1;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 80/58;
+    padding: 5px;
+    box-sizing: border-box;
+    margin-bottom: 4px;
+    /* font-size: ; */
+  }
+
+  .action-buttons {
+    gap: 5px;
+    height: 1.8em;
+  }
+
+  .action-buttons button {
+    font-size: small;
+    border-radius: 2px;
+  }
+
+  .game-workspace-columns > div:first-child {
+    order: 2;
+    width: calc(50vw - 2px);
+    /* flex: 0 0 65%; */
+    box-sizing: border-box;
+    height: 56vh;
+    margin-right: 2px;
+    /* border: 1px solid red; */
+  }
+
+  .score-board {
+    /* max-height: calc(100vh - 4.5vh - 3.8vh - (58vw / 80)); */
+     max-height: calc(91.7vh - 72.5vw - 4px);
+  }
+
+  .small-font {
+    font-size: small !important;
+  }
+
+  .xsmall-font {
+    font-size: x-small !important;
+  }
+
+  .xxsmall-font {
+    font-size: xx-small !important;
+  }
+
+  .player-card {
+    width: 100%;
+    /* font-size: small; */
+  }
+
+  .chat-message-row {
+    font-size: x-small;
+  }
+
+  .game-workspace-columns > div:last-child {
+    order: 3;
+    width: 50vw !important; /* overrides inline style:{width:"280px"} in App.tsx */
+    flex-shrink: 0 !important;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .chat-container {
+    width: calc(50vw - 2px);
+    /* height: 100%; */
+    height: calc(91.7vh - 72.5vw - 4px);
+    margin-left: 2px;
+  }
+
+  .chat-form {
+    position: fixed;
+    bottom: 0;
+    width: 100vw;
+    left: 0;
+    margin: 0;
+    /* border: none; */
+    border-radius: 0;
+    height: 3.8vh;
+  }
+
+  .chat-input {
+    border-radius: 0;
+  }
+
+  .chat-input-wrapper {
+    border-radius: 0;
+  }
+
+  .chat-submit-btn {
+    border-radius: 0;
+  }
+
+  .lowheightfortoolbar {
+    height: calc(91.7vh - 72.5vw - 4.5vh) !important;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Phone Layout Enhancements (< 600px Viewports) */
+@media (max-width: 600px) {
+  .responsive-toolbar {
+
+    /* background-color: none; */
+    background: transparent;
+    /* flex-wrap: wrap; */
+    /* justify-content: center; */
+    gap: 10px;
+    position: relative;
+    margin-top: 2px;
+    margin-bottom: 2px;
+  }
+
+  .color-swatch {
+    width: calc(100vw / 11);
+    aspect-ratio: 1;
+    height: auto;
+    margin: 0;
+    /* height: 25px; */
+  }
+
+  .current-color-preview {
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 0;
+  }
+
+  .color-grid-container {
+    display: none;
+  }
+
+  .color-grid-container.open {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    position: absolute;
+    top: calc(100vw / 11 * 2 * (-1) - 3px);
+    left: 0;
+    width: 100%;
+    justify-content: center;
+    /* gap: 3px; */
+    /* padding: 6px; */
+    background: #fff;
+    border: 1px solid #555;
+    border-radius: 0px;
+    box-sizing: border-box;
+    z-index: 20;
+  }
+
+  /* Boxy look for size picker button */
+  .size-picker-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 0; 
+    border: none;
+  }
+
+  /* Boxy look for tool buttons */
+  .tool-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 0; 
+    border: none;
+  }
+
+  /* Upscaled GIFs inside mobile buttons */
+  .tool-btn img {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Hides shortcut key badges completely on phones */
+  .tool-badge {
+    display: none;
+  }
+
+  .sml-phase{
+    scale: 75%;
+  }
+
+  .player-card {
+    margin-bottom: 4px;
   }
 }

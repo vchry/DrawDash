@@ -45,7 +45,7 @@ export default function RoundResult({
   }, [duration, onClose]);
 
   return (
-    <div className={`round-indicator ${isExiting ? "slide-out" : "slide-in"}`}>
+    <div className={`sml-phase round-indicator ${isExiting ? "slide-out" : "slide-in"}`}>
       <div className="round-content round-result-card">
         <h2>
           The word was <span>{word}</span>

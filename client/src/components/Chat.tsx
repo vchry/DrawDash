@@ -5,6 +5,7 @@ interface ChatProps {
   socket: Socket;
   roomId: string;
   username: string;
+  toolbarVisible: boolean;
 }
 
 interface Message {
@@ -22,7 +23,7 @@ interface Message {
     | "system";
 }
 
-export default function Chat({ socket, roomId, username }: ChatProps) {
+export default function Chat({ socket, roomId, username, toolbarVisible }: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const chatEndRef = useRef<HTMLDivElement | null>(null);
@@ -50,7 +51,12 @@ export default function Chat({ socket, roomId, username }: ChatProps) {
   };
 
   return (
-    <div className="chat-container">
+    <div
+      className={
+        toolbarVisible ? "lowheightfortoolbar chat-container" : "chat-container"
+      }
+    >
+      {/* <div className={canDraw ? "chat-container" : "abc"}> */}
       {/* Scrollable Message History Area */}
       <div className="chat-history">
         {messages.map((msg, index) => {

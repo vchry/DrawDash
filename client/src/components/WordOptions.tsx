@@ -73,7 +73,7 @@ export default function WordOptions({
   }
 
   return (
-    <div className={`word-options ${animationClass}`}>
+    <div className={`sml-phase word-options ${animationClass}`}>
       <div className="word-options-content">
         <h2>Choose a word</h2>
         <div className="word-buttons-container">

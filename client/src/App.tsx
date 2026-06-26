@@ -61,7 +61,7 @@ function App() {
   });
   const previousArtistRef = React.useRef<string | null>(null);
   const previousRoundRef = React.useRef<number>(0);
-  
+
   // State to track which specific hero avatar is currently playing its pop animation
   const [animatingAvatarIndex, setAnimatingAvatarIndex] = useState<
     number | null
@@ -317,6 +317,12 @@ function App() {
   const isOverlayActive = isRoundResultActive || isGameOverActive;
   const canDraw = isArtist && !isOverlayActive;
 
+  const toolbarVisible =
+    isArtist &&
+    roomState?.gameStarted &&
+    roomState?.phase === "drawing" &&
+    !isOverlayActive;
+
   return (
     <div className={isJoined ? "join-game-container" : "game-container"}>
       <div className={isJoined ? "header-left" : "header"}>
@@ -400,11 +406,12 @@ function App() {
             hasGuessed={roomState.correctGuessers?.includes(socket.id) ?? false}
           />
           <div className="game-workspace-columns">
-            <div>
+            <div className="score-board">
               <ScoreBoard
                 players={players}
                 roomState={roomState}
                 currentUserId={socket.id}
+                toolbarVisible={toolbarVisible}
               />
             </div>
 
@@ -473,7 +480,12 @@ function App() {
             </div>
 
             <div style={{ width: "280px", flexShrink: 0 }}>
-              <Chat socket={socket} roomId={roomId} username={username} />
+              <Chat
+                socket={socket}
+                roomId={roomId}
+                username={username}
+                toolbarVisible={toolbarVisible}
+              />
             </div>
           </div>
         </div>

@@ -43,7 +43,7 @@ export default function GameOverWinners({
   const third = podium[2];
 
   return (
-    <div className={`round-indicator ${isExiting ? "slide-out" : "slide-in"}`}>
+    <div className={`sml-phase round-indicator ${isExiting ? "slide-out" : "slide-in"}`}>
       <div className="game-over-card">
         {first && (
           <h2 className="podium-title">

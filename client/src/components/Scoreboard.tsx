@@ -6,12 +6,14 @@ interface ScoreboardProps {
   players: Player[];
   roomState: RoomState | null;
   currentUserId: string | undefined;
+  toolbarVisible: boolean;
 }
 
 export default function Scoreboard({
   players,
   roomState,
   currentUserId,
+  toolbarVisible,
 }: ScoreboardProps) {
   const sortedPlayers = [...players].sort(
     (a, b) => (b.score || 0) - (a.score || 0),
@@ -20,7 +22,7 @@ export default function Scoreboard({
   const isGameStarted = !!roomState?.currentArtist;
 
   return (
-    <div className="sidebar">
+    <div className={toolbarVisible ? "lowheightfortoolbar sidebar" : "sidebar"}>
       <ul className="player-list">
         {sortedPlayers.map((player, index) => {
           const hasGuessedCorrectly =
@@ -34,12 +36,12 @@ export default function Scoreboard({
               className={`player-card ${hasGuessedCorrectly ? "correct-guesser" : ""}`}
               style={{
                 /* Removed borderLeft properties entirely */
-                border: "1px solid #dee2e6", 
+                border: "1px solid #dee2e6",
                 /* Clean background switch: green if correct, otherwise white */
                 background: hasGuessedCorrectly ? "#D4F8CB" : "#fff",
               }}
             >
-              <div className="player-rank">#{index + 1}</div>
+              <div className="player-rank small-font">#{index + 1}</div>
 
               {/* Player Context Text fields */}
               <div
@@ -51,11 +53,13 @@ export default function Scoreboard({
                 }}
               >
                 <span
-                  className={`player-name ${player.id === currentUserId ? "bold" : ""}`}
+                  className={`player-name xsmall-font ${player.id === currentUserId ? "bold" : ""}`}
                 >
                   {player.username} {player.id === currentUserId ? "(You)" : ""}
                 </span>
-                <span className="player-score">{player.score || 0} Points</span>
+                <span className="player-score xxsmall-font">
+                  {player.score || 0} Points
+                </span>
               </div>
 
               {/* Drawing Indicator & Avatar Container */}
