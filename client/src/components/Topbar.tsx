@@ -248,27 +248,24 @@ export default function TopBar({
     return <div className="status-text">DRAWING...</div>;
   };
 
-
   return (
     <>
       {/* Settings modal — fixed overlay, renders above everything */}
-      {settingsOpen && (
-        <SettingsPanel
-          onClose={() => setSettingsOpen(false)}
-        />
-      )}
+      {settingsOpen && <SettingsPanel onClose={() => setSettingsOpen(false)} />}
 
       <div className="topbar">
         <div className="timer-round">
-          <div className="timer">
-            <img src={Clock} alt="Clock Icon" width={70} className="shadow" />
-            <span className="time">{timer}</span>
-          </div>
-          <div className="round">
-            <h3 style={{ margin: 0, fontSize: "18px" }}>
-              Round {currentRound} of {totalRounds}
-            </h3>
-          </div>
+          {/* <div className="timer-round-container"> */}
+            <div className="timer">
+              <img src={Clock} alt="Clock Icon" width={70} className="shadow" />
+              <span className="time">{timer}</span>
+            </div>
+            <div className="round">
+              <h3 style={{ margin: 0, fontSize: "18px" }}>
+                Round {currentRound} of {totalRounds}
+              </h3>
+            </div>
+          {/* </div> */}
         </div>
 
         <div className="word-area">{renderWordArea()}</div>

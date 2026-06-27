@@ -650,6 +650,7 @@
 .topbar {
   display: flex;
   align-items: center;
+  /* width: 1024px; */
   width: calc(100vw - 240px);
   background: white;
   height: 48px;
@@ -2052,6 +2053,49 @@
     height: 4.5vh;
   }
 
+  .timer-round {
+    flex-direction: column;
+    gap: 0;
+    /* align-items: baseline; */
+    /* border: 1px solid green; */
+    /* align-items:center; */
+  }
+
+  /* .timer-round-container {
+    border: 1px solid fuchsia;
+  } */
+
+  .timer {
+    scale: 35%;
+    /* border: 1px solid blue; */
+    margin-top: 5px;
+    margin-left: -30px;
+    /* left: 0; */
+  }
+  
+  .round {
+    /* border: 1px solid red; */
+    scale: 40%;
+    margin-top: -53px;
+    margin-left: -30px;
+  }
+  
+  .round h3 {
+    font-weight: 900 !important;
+    /* margin-left: -500px; */
+  }
+
+  .word-area{
+    /* border: 1px solid red; */
+    scale: 50%;
+    left: 50%;
+    transform: translateX(-100%);
+  }
+
+  .setting-btn {
+    scale: 70%;
+  }
+
   .hero-avatar {
     transform: scale(0.5);
   }
@@ -2132,6 +2176,10 @@
     box-sizing: border-box;
     margin-bottom: 4px;
     /* font-size: ; */
+  }
+
+  .invite-btn {
+    width: 35%;
   }
 
   .action-buttons {
@@ -2323,6 +2371,10 @@
 
   .sml-phase{
     scale: 75%;
+  }
+  
+  .xsml-phase{
+    scale: 45%;
   }
 
   .player-card {
