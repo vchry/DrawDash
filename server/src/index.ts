@@ -1,5 +1,5 @@
 import express from "express";
-import { createServer } from 'http';
+import { createServer } from "http";
 import { Server } from "socket.io";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -7,8 +7,14 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
+
+// Health check route for cron-job bots
+app.get("/", (req, res) => {
+  res.status(200).send("Draw Dash Server is awake!");
+});
+
 // FIX: Create the HTTP server using express
-const server = createServer(app); 
+const server = createServer(app);
 
 const CLIENT_URL = process.env.CLIENT_URL!;
 
