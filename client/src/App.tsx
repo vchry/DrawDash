@@ -317,11 +317,12 @@ function App() {
   const isOverlayActive = isRoundResultActive || isGameOverActive;
   const canDraw = isArtist && !isOverlayActive;
 
-  const toolbarVisible =
+  const toolbarVisible = !!(
     isArtist &&
     roomState?.gameStarted &&
     roomState?.phase === "drawing" &&
-    !isOverlayActive;
+    !isOverlayActive
+  );
 
   return (
     <div className={isJoined ? "join-game-container" : "game-container"}>
@@ -410,7 +411,7 @@ function App() {
               <ScoreBoard
                 players={players}
                 roomState={roomState}
-                currentUserId={socket.id}
+                currentUserId={socket.id ?? ""}
                 toolbarVisible={toolbarVisible}
               />
             </div>
@@ -461,6 +462,7 @@ function App() {
                     width={width}
                     activeTool={activeTool}
                     setActiveTool={setActiveTool}
+                    setWidth={setWidth}
                   />
                   {canDraw && (
                     <Toolbar

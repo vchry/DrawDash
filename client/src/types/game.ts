@@ -2,6 +2,7 @@ export interface Player {
   id: string;
   username: string;
   score: number;
+  hasGuessed: boolean; // Added to fix src/temp.tsx error
 
   // Avatar customization configuration (0 to 9)
   body?: number;
@@ -24,4 +25,11 @@ export interface RoomState {
   currentRound?: number;
   totalRounds?: number;
   showPhaseSequence?: boolean;
+
+  // Added to fix src/App.tsx, src/temp.tsx, and src/components/Topbar.tsx errors
+  phase: 'waiting' | 'choosing' | 'drawing' | 'end' | string; 
+  
+  // Added to fix src/App.tsx and src/components/GameSetting.tsx errors
+  wordOptionsCount: number; 
+  maxPlayers: number;       
 }

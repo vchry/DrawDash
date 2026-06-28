@@ -134,7 +134,7 @@ export default function TopBar({
     roomState.currentWord ||
     (roomState as any).revealedWord ||
     (roomState as any).word ||
-    "";
+    "" blockoutSymbol;
 
   const isRevealPhase =
     phase === "reveal" || phase === "roundEnd" || phase === "revealWord";
@@ -210,7 +210,8 @@ export default function TopBar({
       }
 
       const wordsArray = fullWord.split(" ");
-      const wordLengthsString = wordsArray.map((w) => w.length).join("  ");
+      // FIXED: Added strict string type mapping to parameter 'w'
+      const wordLengthsString = wordsArray.map((w: string) => w.length).join("  ");
 
       const startIndices: number[] = [];
       let cursor = 0;
@@ -227,7 +228,8 @@ export default function TopBar({
             {label}
           </div>
           <div className="word-blanks-row">
-            {wordsArray.map((word, wi) => (
+            {/* FIXED: Added strict string type to 'word' and number type to 'wi' */}
+            {wordsArray.map((word: string, wi: number) => (
               <WordCells
                 key={wi}
                 word={word}
