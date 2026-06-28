@@ -433,6 +433,15 @@ io.on("connection", (socket) => {
   socket.on("start_game_request", ({ roomId }: { roomId: string }) => {
     const room = activeRooms[roomId] as RoomState;
     if (room && room.hostId === socket.id && !room.gameStarted) {
+      if (room.players.length < 2) {
+        socket.emit("chat_message", {
+          sender: "System",
+          text: "You need at least 2 players to start the game!",
+          type: "system",
+        });
+        return;
+      }
+
       room.players.forEach((p) => (p.score = 0));
 
       room.currentRound = 0;
@@ -715,6 +724,43 @@ io.on("connection", (socket) => {
         delete activeRooms[`interval_${roomId}`];
         delete activeRooms[`selection_${roomId}`];
         delete activeRooms[roomId];
+      } else if (room.gameStarted && room.players.length === 1) {
+        // Everyone else left mid-game -> last player wins by default
+        if (activeRooms[`interval_${roomId}`])
+          clearInterval(activeRooms[`interval_${roomId}`]);
+        if (activeRooms[`selection_${roomId}`])
+          clearInterval(activeRooms[`selection_${roomId}`]);
+
+        const winner = room.players[0]!;
+
+        io.to(roomId).emit("chat_message", {
+          sender: "System",
+          text: `Everyone else left! ${winner.username} wins by default!`,
+          type: "left",
+        });
+
+        io.to(roomId).emit("game_over", {
+          winners: [
+            {
+              id: winner.id,
+              username: winner.username,
+              score: winner.score,
+              body: winner.body,
+              eyes: winner.eyes,
+              mouth: winner.mouth,
+            },
+          ],
+        });
+
+        room.gameStarted = false;
+        room.currentArtist = null;
+        room.phase = "selecting";
+        room.timeLeft = 0;
+        room.currentRound = 0;
+        room.artistIndex = -1;
+        room.correctGuessers = [];
+
+        io.to(roomId).emit("room_state_update", room);
       } else if (room.gameStarted && room.currentArtist === socket.id) {
         io.to(roomId).emit("chat_message", {
           sender: "System",

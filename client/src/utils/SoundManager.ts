@@ -16,7 +16,10 @@ const SOUND_MAP: Record<string, string> = {
 
 const audioCache: Record<string, HTMLAudioElement> = {};
 let muted = false;
-let volume = 0.6;
+
+// Automatically load the saved volume from localStorage if it exists, otherwise default to 0.6
+const savedVolume = localStorage.getItem("volume");
+let volume = savedVolume ? Number(savedVolume) / 100 : 0.6;
 
 export function setMuted(value: boolean) {
   muted = value;

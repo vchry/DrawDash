@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import key from '../assets/key.gif'
-import audio from '../assets/audio.gif'
+import key from '../assets/key.gif';
+import audio from '../assets/audio.gif';
+import { setVolume as setGlobalVolume } from '../utils/SoundManager'; // Adjust this path based on your directory structure
 
 type HotkeyMap = {
   Brush: string;
@@ -50,31 +51,30 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
 
       e.stopPropagation();
       e.stopImmediatePropagation();
-
       e.preventDefault();
 
-      const key = e.key.toUpperCase();
+      const keyName = e.key.toUpperCase();
 
-      if (key === 'ESCAPE') {
+      if (keyName === 'ESCAPE') {
         setListening(null);
         return;
       }
 
-      if (/^[A-Z]$/.test(key)) {
+      if (/^[A-Z]$/.test(keyName)) {
         setHotkeys(prev => {
           const alreadyUsed = Object.entries(prev).some(
             ([action, value]) =>
-              action !== listening && value === key
+              action !== listening && value === keyName
           );
 
           if (alreadyUsed) {
-            alert(`"${key}" is already assigned.`);
+            alert(`"${keyName}" is already assigned.`);
             return prev;
           }
 
           const updated = {
             ...prev,
-            [listening]: key,
+            [listening]: keyName,
           };
 
           localStorage.setItem(
@@ -123,8 +123,10 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
 
   const handleVolumeChange = (newVolume: number) => {
     setVolume(newVolume);
-
     localStorage.setItem("volume", String(newVolume));
+    
+    // Sync UI slider adjustments (0-100) down to SoundManager (0.0 - 1.0)
+    setGlobalVolume(newVolume / 100);
   };
 
   return (

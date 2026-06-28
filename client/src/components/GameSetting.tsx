@@ -38,7 +38,11 @@ export default function PregameLobby({
           <label>
             <img src={Players} alt="Player Gif" width={30} className="shadow" /> Players
           </label>
-          <select disabled={!isHost} defaultValue="6">
+          <select 
+            value={roomState.maxPlayers ?? 6} 
+            disabled={!isHost}
+            onChange={(e) => onSettingChange("maxPlayers", Number(e.target.value))}
+          >
             <option value="2">2</option>
             <option value="3">3</option>
             <option value="4">4</option>
@@ -114,13 +118,6 @@ export default function PregameLobby({
           <label>
             <img src={Hint} alt="Hint Gif" width={30} className="shadow" /> Hints
           </label>
-          {/*
-            ── Wired to roomState.hints so all clients see the same value ──
-            ── onSettingChange("hints", n) emits to the server like the    ──
-            ── other settings. Topbar reads roomState.hints and caps the   ──
-            ── actual reveals at floor(wordLength / 2) so short words      ──
-            ── never get fully revealed even if hints > letters.           ──
-          */}
           <select
             value={(roomState as any).hints ?? 3}
             disabled={!isHost}
@@ -131,7 +128,7 @@ export default function PregameLobby({
             <option value="0">0</option>
             <option value="1">1</option>
             <option value="2">2</option>
-            <option value="3" selected>3</option>
+            <option value="3">3</option>
             <option value="4">4</option>
             <option value="5">5</option>
           </select>
@@ -147,7 +144,8 @@ export default function PregameLobby({
           <button className="start-btn disabled-btn" disabled>
             Waiting for Host...
           </button>
-        )}
+        )
+      }
 
         <button
           className="invite-btn"
