@@ -1,12 +1,14 @@
 import express from "express";
-import http from "http";
+import { createServer } from 'http';
 import { Server } from "socket.io";
 import cors from "cors";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
-
-import dotenv from "dotenv";
-dotenv.config();
+// FIX: Create the HTTP server using express
+const server = createServer(app); 
 
 const CLIENT_URL = process.env.CLIENT_URL!;
 
@@ -17,6 +19,7 @@ app.use(
   }),
 );
 
+// FIX: Now 'server' safely exists and can be passed here
 const io = new Server(server, {
   cors: {
     origin: CLIENT_URL,
