@@ -22,7 +22,7 @@ import RoundResult from "./components/RoundResult";
 import GameOverWinners from "./components/GameOverWinners";
 
 import { playSound } from "./utils/SoundManager";
-const socket: Socket = io("http://localhost:3001");
+const socket: Socket = io(import.meta.env.VITE_SERVER_URL);
 
 function App() {
   const [username, setUsername] = useState<string>(() => {

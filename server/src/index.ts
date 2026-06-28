@@ -4,15 +4,27 @@ import { Server } from "socket.io";
 import cors from "cors";
 
 const app = express();
-app.use(cors());
 
-const server = http.createServer(app);
+import dotenv from "dotenv";
+dotenv.config();
+
+const CLIENT_URL = process.env.CLIENT_URL!;
+
+app.use(
+  cors({
+    origin: CLIENT_URL,
+    credentials: true,
+  }),
+);
+
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: CLIENT_URL,
     methods: ["GET", "POST"],
+    credentials: true,
   },
 });
+
 const PORT = process.env.PORT || 3001;
 
 const WORD_BANK = [
