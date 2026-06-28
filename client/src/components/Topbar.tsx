@@ -134,7 +134,7 @@ export default function TopBar({
     roomState.currentWord ||
     (roomState as any).revealedWord ||
     (roomState as any).word ||
-    "" blockoutSymbol;
+    "";
 
   const isRevealPhase =
     phase === "reveal" || phase === "roundEnd" || phase === "revealWord";
@@ -211,7 +211,9 @@ export default function TopBar({
 
       const wordsArray = fullWord.split(" ");
       // FIXED: Added strict string type mapping to parameter 'w'
-      const wordLengthsString = wordsArray.map((w: string) => w.length).join("  ");
+      const wordLengthsString = wordsArray
+        .map((w: string) => w.length)
+        .join("  ");
 
       const startIndices: number[] = [];
       let cursor = 0;
@@ -258,15 +260,15 @@ export default function TopBar({
       <div className="topbar">
         <div className="timer-round">
           {/* <div className="timer-round-container"> */}
-            <div className="timer">
-              <img src={Clock} alt="Clock Icon" width={70} className="shadow" />
-              <span className="time">{timer}</span>
-            </div>
-            <div className="round">
-              <h3 style={{ margin: 0, fontSize: "18px" }}>
-                Round {currentRound} of {totalRounds}
-              </h3>
-            </div>
+          <div className="timer">
+            <img src={Clock} alt="Clock Icon" width={70} className="shadow" />
+            <span className="time">{timer}</span>
+          </div>
+          <div className="round">
+            <h3 style={{ margin: 0, fontSize: "18px" }}>
+              Round {currentRound} of {totalRounds}
+            </h3>
+          </div>
           {/* </div> */}
         </div>
 
